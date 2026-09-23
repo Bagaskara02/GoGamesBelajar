@@ -4,7 +4,14 @@ import React, { useRef, useEffect } from 'react';
  * GameCanvas2D - Visualisasi Game 2D Cyber-Lab Interaktif
  * Menampilkan simulasi hardware cerah, karakter maskot Gopher Engineer, dan animasi 60 FPS.
  */
-export default function GameCanvas2D({ level, isSuccess, isExecuting }) {
+export default function GameCanvas2D({
+  level,
+  isSuccess,
+  isExecuting,
+  onClaimVictory,
+  isCollapsed = false,
+  onToggleCollapse
+}) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -106,47 +113,82 @@ export default function GameCanvas2D({ level, isSuccess, isExecuting }) {
   }, [level, isSuccess, isExecuting]);
 
   return (
-    <div className="relative w-full h-full bg-white rounded-3xl border border-slate-200/90 shadow-md flex flex-col overflow-hidden">
+    <div className="relative w-full h-full bg-white rounded-3xl border border-slate-200/90 shadow-md flex flex-col overflow-hidden transition-all">
       {/* Top Header Status */}
-      <div className="bg-slate-50/90 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between text-xs">
+      <div className="bg-slate-50/95 px-3 sm:px-4 py-2 sm:py-2.5 border-b border-slate-200 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-pulse"></span>
-          <span className="font-bold text-slate-700 tracking-wide">
+          <span className={`w-2.5 h-2.5 rounded-full ${isSuccess ? 'bg-emerald-500 animate-ping' : 'bg-sky-500 animate-pulse'}`}></span>
+          <span className="font-bold text-slate-800 tracking-wide text-[11px] sm:text-xs">
             SIMULASI 2D CYBER-LAB
           </span>
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-[11px] font-medium text-slate-500 hidden sm:inline">
-            Status Perangkat:
-          </span>
+          {/* Victory Claim Button in Header when solved */}
+          {isSuccess && onClaimVictory && (
+            <button
+              onClick={onClaimVictory}
+              className="flex items-center space-x-1 px-2.5 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 rounded-xl font-black text-[10px] sm:text-[11px] shadow-sm shadow-amber-500/20 active:scale-95 transition"
+              title="Buka Ringkasan Level Berikutnya"
+            >
+              <span>🏆</span>
+              <span>BUKA HASIL</span>
+            </button>
+          )}
+
           <span
-            className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide transition-all ${
+            className={`px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide transition-all ${
               isSuccess
                 ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
                 : 'bg-amber-100 text-amber-700 border border-amber-300'
             }`}
           >
-            {isSuccess ? '● AKTIF & STABIL' : '○ MENUNGGU INSTRUKSI KODE'}
+            {isSuccess ? '● AKTIF & STABIL' : '○ MENUNGGU KODE'}
           </span>
+
+          {/* Optional collapse toggle on small screens */}
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition lg:hidden"
+              title={isCollapsed ? "Tampilkan Kanvas Penuh" : "Sembunyikan Kanvas Sementara"}
+            >
+              <span className="text-[11px] font-bold">{isCollapsed ? '▼ Buka' : '▲ Lipat'}</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Canvas Viewport */}
-      <div className="relative flex-1 w-full h-full flex items-center justify-center p-2 bg-slate-900">
-        <canvas
-          ref={canvasRef}
-          width={640}
-          height={320}
-          className="w-full h-full object-contain rounded-2xl"
-        />
+      {/* Canvas Viewport (Hidden if collapsed) */}
+      {!isCollapsed ? (
+        <div className="relative flex-1 w-full h-full flex items-center justify-center p-1.5 sm:p-2 bg-slate-900 overflow-hidden">
+          <canvas
+            ref={canvasRef}
+            width={640}
+            height={320}
+            className="w-full h-full object-contain rounded-2xl"
+          />
 
-        {/* Level Goal Watermark on bottom-right */}
-        <div className="absolute bottom-3 right-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700/60 px-3 py-1.5 rounded-xl text-[11px] text-slate-300 flex items-center space-x-2">
-          <span className="text-sky-400">⚡ Target:</span>
-          <span className="font-semibold text-white">{level.visualGoal}</span>
+          {/* Level Goal Watermark on bottom-right */}
+          <div className="absolute bottom-2 right-2.5 sm:bottom-3 sm:right-4 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-[11px] text-slate-300 flex items-center space-x-1.5 max-w-[85%] truncate shadow-md">
+            <span className="text-sky-400 font-bold flex-shrink-0">⚡ Target:</span>
+            <span className="font-semibold text-white truncate">{level.visualGoal}</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="p-2.5 bg-slate-900 flex items-center justify-between text-slate-300 text-xs">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="text-base">🐹</span>
+            <span className="truncate text-slate-200 font-medium">Target: {level.visualGoal}</span>
+          </div>
+          <button
+            onClick={onToggleCollapse}
+            className="text-sky-400 font-bold text-xs hover:underline flex-shrink-0 ml-2"
+          >
+            Lihat Animasi 2D
+          </button>
+        </div>
+      )}
     </div>
   );
 }

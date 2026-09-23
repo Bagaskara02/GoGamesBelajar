@@ -2,6 +2,19 @@ import React, { useState, useRef } from 'react';
 import { RotateCcw, HelpCircle, Copy, Check, Play, Sparkles, FileCode } from 'lucide-react';
 import { soundEffects } from '../utils/soundEffects';
 
+const QUICK_SNIPPETS = [
+  { label: ':=', insert: ' := ' },
+  { label: 'fmt.Println()', insert: 'fmt.Println()' },
+  { label: '""', insert: '""' },
+  { label: '()', insert: '()' },
+  { label: '{ }', insert: '{\n    \n}' },
+  { label: 'func ', insert: 'func ' },
+  { label: 'var ', insert: 'var ' },
+  { label: 'return ', insert: 'return ' },
+  { label: 'err != nil', insert: 'err != nil' },
+  { label: 'go func()', insert: 'go func() {\n    \n}()' }
+];
+
 export default function CodeEditor({
   code,
   onChange,
@@ -9,7 +22,9 @@ export default function CodeEditor({
   onReset,
   hint,
   isExecuting,
-  isSuccess
+  isSuccess,
+  hasError = false,
+  onViewTerminal
 }) {
   const [showHint, setShowHint] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -46,6 +61,30 @@ export default function CodeEditor({
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleInsertSnippet = (snippet) => {
+    soundEffects.playClick();
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      onChange(code + snippet);
+      return;
+    }
+    const start = textarea.selectionStart ?? code.length;
+    const end = textarea.selectionEnd ?? code.length;
+    const newCode = code.substring(0, start) + snippet + code.substring(end);
+    onChange(newCode);
+
+    setTimeout(() => {
+      textarea.focus();
+      let newCursorPos = start + snippet.length;
+      if (snippet === '""' || snippet === '()') {
+        newCursorPos = start + 1;
+      } else if (snippet === 'fmt.Println()') {
+        newCursorPos = start + 12;
+      }
+      textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+    }, 10);
   };
 
   return (
@@ -143,7 +182,7 @@ export default function CodeEditor({
 
       {/* Hint Alert Drawer */}
       {showHint && hint && (
-        <div className="bg-amber-950/50 border-b border-amber-500/40 px-5 py-3 flex items-start space-x-3 text-xs text-amber-200">
+        <div className="bg-amber-950/50 border-b border-amber-500/40 px-4 py-2.5 sm:px-5 sm:py-3 flex items-start space-x-3 text-xs text-amber-200">
           <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <strong className="text-amber-300 block mb-0.5 font-bold">Bocoran Petunjuk:</strong>
@@ -151,6 +190,44 @@ export default function CodeEditor({
           </div>
         </div>
       )}
+
+      {/* Error Quick Alert Banner (if error occurred during last run) */}
+      {hasError && onViewTerminal && (
+        <div className="bg-rose-950/80 border-b border-rose-500/50 px-3.5 py-2 flex items-center justify-between text-xs text-rose-200 animate-fadeIn">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping flex-shrink-0"></span>
+            <span className="font-semibold truncate">Program belum tepat atau ada error sintaks</span>
+          </div>
+          <button
+            onClick={() => {
+              soundEffects.playClick();
+              onViewTerminal();
+            }}
+            className="flex items-center space-x-1 px-2.5 py-0.5 rounded-lg bg-rose-500/30 hover:bg-rose-500/50 border border-rose-400/40 text-white font-bold text-[11px] transition flex-shrink-0 ml-2"
+          >
+            <span>Lihat Solusi di Terminal</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
+      )}
+
+      {/* Golang Virtual Quick-Bar for Mobile & Fast Coding */}
+      <div className="bg-slate-950/95 px-3 py-1.5 border-b border-slate-800/80 flex items-center space-x-1.5 overflow-x-auto no-scrollbar">
+        <span className="text-[10px] text-slate-500 font-sans font-bold flex-shrink-0 mr-1 hidden sm:inline">
+          Karakter Cepat:
+        </span>
+        {QUICK_SNIPPETS.map((snip, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => handleInsertSnippet(snip.insert)}
+            className="px-2 py-1 bg-slate-800 hover:bg-sky-900/60 active:bg-sky-700 text-sky-300 hover:text-sky-100 border border-slate-700/80 rounded-lg whitespace-nowrap text-[11px] font-mono transition transform active:scale-95 flex-shrink-0"
+            title={`Sisipkan ${snip.label}`}
+          >
+            {snip.label}
+          </button>
+        ))}
+      </div>
 
       {/* Code Editor Body */}
       <div className="relative flex-1 flex overflow-hidden bg-slate-900">
