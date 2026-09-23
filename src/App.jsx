@@ -217,7 +217,7 @@ export default function App() {
         {/* MOBILE VIEW (< 1024px): Kanvas 2D Selalu Tampil di Atas + Tab Editor/Terminal di Bawah */}
         <div className="lg:hidden flex flex-col gap-3">
           {/* Kanvas Simulasi 2D Persisten di HP */}
-          <div className={`w-full transition-all duration-300 ${canvasCollapsed ? 'h-[50px]' : 'h-[190px] xs:h-[220px] sm:h-[260px]'}`}>
+          <div className={`w-full transition-all duration-300 ${canvasCollapsed ? 'h-[50px]' : 'h-[160px] xs:h-[185px] sm:h-[240px]'}`}>
             <GameCanvas2D
               level={currentLevel}
               isSuccess={isSuccess}
