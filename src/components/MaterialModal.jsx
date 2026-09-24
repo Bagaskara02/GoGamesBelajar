@@ -49,11 +49,11 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                   LEVEL {String(level.id).padStart(2, '0')} • {level.category || 'GOLANG'}
                 </span>
               </div>
-              <h2 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 font-pixel truncate">
+              <h2 className="text-sm sm:text-lg font-extrabold text-slate-900 truncate">
                 {level.title}
               </h2>
               {level.subtitle && (
-                <p className="text-xs sm:text-sm text-slate-700 font-bold truncate mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-700 font-semibold truncate mt-0.5">
                   {level.subtitle}
                 </p>
               )}
@@ -90,7 +90,7 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                 }`}
               >
                 <Icon size={15} className="shrink-0" />
-                <span className="font-pixel text-[8px] sm:text-[10px] tracking-wider truncate">
+                <span className="text-xs sm:text-sm font-extrabold tracking-wide truncate">
                   {tab.label}
                 </span>
               </button>
@@ -105,7 +105,7 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
               {/* Dialogue Bubble */}
               <div className="bg-[#e0f2fe] p-4 border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a]">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[9px] font-pixel text-sky-900 uppercase">
+                  <span className="text-xs font-extrabold text-sky-900 uppercase">
                     💬 Instruksi Mentor Gopher:
                   </span>
                 </div>
@@ -117,7 +117,7 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
               {/* Concepts Grid */}
               {Array.isArray(level.concepts) && level.concepts.length > 0 && (
                 <div>
-                  <h3 className="text-[10px] sm:text-xs font-pixel text-slate-900 uppercase mb-3">
+                  <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase mb-3">
                     ★ Konsep Penting Level Ini:
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
@@ -128,19 +128,19 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                       >
                         <div>
                           <div className="flex items-center justify-between gap-2 mb-2">
-                            <span className="text-[8px] font-pixel px-2 py-0.5 bg-[#fde047] text-slate-900 border-2 border-slate-900">
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-[#fde047] text-slate-900 border-2 border-slate-900">
                               {concept.badge || `Konsep ${idx + 1}`}
                             </span>
                           </div>
-                          <h4 className="font-mono font-bold text-lg text-sky-800 mb-1">
+                          <h4 className="font-mono font-bold text-sm text-sky-800 mb-1.5">
                             {concept.name}
                           </h4>
-                          <p className="text-slate-800 text-sm leading-relaxed mb-3">
+                          <p className="text-slate-800 text-xs sm:text-sm leading-relaxed mb-3">
                             {concept.desc}
                           </p>
                         </div>
                         {concept.code && (
-                          <div className="bg-[#fef9c3] text-slate-900 font-mono text-base p-2.5 border-2 border-slate-900 overflow-x-auto whitespace-pre">
+                          <div className="bg-[#fef9c3] text-slate-900 font-mono text-xs p-2.5 border-2 border-slate-900 whitespace-pre-wrap break-words leading-relaxed">
                             <code>{concept.code}</code>
                           </div>
                         )}
@@ -156,27 +156,27 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                   <div className="flex items-center justify-between px-3.5 py-2 bg-[#bae6fd] border-b-[3px] border-slate-900">
                     <div className="flex items-center gap-2 text-slate-900">
                       <Terminal size={15} />
-                      <span className="text-[9px] font-pixel">contoh_referensi.go</span>
+                      <span className="text-xs font-mono font-bold">contoh_referensi.go</span>
                     </div>
                     <button
                       onClick={handleCopyCode}
-                      className="text-xs text-slate-900 hover:bg-amber-200 flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]"
+                      className="text-xs text-slate-900 hover:bg-amber-200 flex items-center gap-1.5 px-2.5 py-1 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-bold"
                       title="Salin Contoh Kode"
                     >
                       {copied ? (
                         <>
                           <Check size={14} className="text-emerald-700" />
-                          <span className="text-emerald-800 text-[9px] font-pixel">TERSALIN!</span>
+                          <span className="text-emerald-800 text-xs">Tersalin!</span>
                         </>
                       ) : (
                         <>
                           <Copy size={14} />
-                          <span className="text-[9px] font-pixel">SALIN</span>
+                          <span className="text-xs">Salin Contoh</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <pre className="p-4 bg-[#fffef9] text-slate-900 font-mono text-lg overflow-x-auto leading-6">
+                  <pre className="p-4 bg-[#fffef9] text-slate-900 font-mono text-xs sm:text-sm overflow-x-auto leading-6">
                     <code>{codeToCopy}</code>
                   </pre>
                 </div>
@@ -187,10 +187,10 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                 <div className="bg-[#fef9c3] border-[3px] border-slate-900 p-4 flex gap-3.5 shadow-[4px_4px_0px_#0f172a]">
                   <Zap className="text-amber-600 shrink-0 mt-0.5" size={22} />
                   <div>
-                    <h4 className="text-slate-900 font-pixel text-[9px] mb-1.5">
+                    <h4 className="text-slate-900 font-extrabold text-xs sm:text-sm mb-1">
                       💡 PRO TIP: {level.proTip.title}
                     </h4>
-                    <p className="text-slate-800 text-sm leading-relaxed font-medium">
+                    <p className="text-slate-800 text-xs sm:text-sm leading-relaxed font-medium">
                       {level.proTip.content}
                     </p>
                   </div>
@@ -207,10 +207,10 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                     {level.analogy?.icon || '💡'}
                   </div>
                   <div>
-                    <span className="text-[9px] font-pixel text-amber-800 uppercase block mb-1">
+                    <span className="text-xs font-extrabold text-amber-800 uppercase block mb-0.5">
                       Analogi Kehidupan Sehari-hari
                     </span>
-                    <h3 className="text-sm sm:text-base font-pixel text-slate-900">
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
                       {level.analogy?.headline || 'Memahami Logika Tanpa Pusing'}
                     </h3>
                   </div>
@@ -232,7 +232,7 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
 
               {level.story && (
                 <div className="bg-white p-4 border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a]">
-                  <h4 className="text-[9px] font-pixel text-sky-800 uppercase mb-2 flex items-center gap-2">
+                  <h4 className="text-xs font-extrabold text-sky-800 uppercase mb-2 flex items-center gap-2">
                     <Sparkles size={14} className="text-sky-600" />
                     <span>Situasi Petualangan:</span>
                   </h4>
@@ -250,26 +250,26 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                 <div className="flex items-center gap-3 mb-3">
                   <Target size={28} className="text-slate-900 shrink-0" />
                   <div>
-                    <span className="text-[9px] font-pixel text-emerald-900 uppercase block mb-1">
+                    <span className="text-xs font-extrabold text-emerald-900 uppercase block mb-0.5">
                       QUEST OBJECTIVE
                     </span>
-                    <h3 className="text-slate-900 font-pixel text-xs sm:text-sm">
-                      MISI PEMROGRAMAN KAMU
+                    <h3 className="text-slate-900 font-extrabold text-base sm:text-lg">
+                      Misi Pemrograman Kamu
                     </h3>
                   </div>
                 </div>
-                <p className="text-slate-900 text-sm sm:text-base font-bold leading-relaxed whitespace-pre-line">
+                <p className="text-slate-900 text-sm sm:text-base font-semibold leading-relaxed whitespace-pre-line">
                   {activeMission.objective}
                 </p>
 
-                <div className="mt-4 bg-white border-2 border-slate-900 p-3 text-sm text-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                <div className="mt-4 bg-white border-2 border-slate-900 p-3 text-xs sm:text-sm text-slate-900 shadow-[2px_2px_0px_#0f172a]">
                   ✨ <strong>Catatan Penting:</strong> Validasi jawaban bersifat <strong>fleksibel berbasis konsep</strong>! Kata-kata output tidak harus plek-ketiplek sama persis—selama konsep & struktur logika Go yang kamu tulis sudah benar, misimu otomatis berhasil!
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white p-4 border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a]">
-                  <div className="text-[9px] font-pixel text-sky-800 mb-2 uppercase">
+                  <div className="text-xs font-extrabold text-sky-800 mb-2 uppercase">
                     ⚡ Target Simulasi 2D
                   </div>
                   <div className="text-slate-900 text-sm font-bold">
@@ -278,10 +278,10 @@ const MaterialModal = ({ isOpen, onClose, level, mission }) => {
                 </div>
 
                 <div className="bg-white p-4 border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a]">
-                  <div className="text-[9px] font-pixel text-amber-800 mb-2 uppercase">
+                  <div className="text-xs font-extrabold text-amber-800 mb-2 uppercase">
                     📟 Contoh Target Output Terminal
                   </div>
-                  <pre className="bg-[#fef9c3] p-3 border-2 border-slate-900 text-slate-900 font-mono text-lg whitespace-pre-wrap overflow-x-auto">
+                  <pre className="bg-[#fef9c3] p-3 border-2 border-slate-900 text-slate-900 font-mono text-xs sm:text-sm whitespace-pre-wrap overflow-x-auto leading-relaxed">
                     {activeMission.expectedOutput || level.expectedOutput || 'Output sesuai instruksi'}
                   </pre>
                 </div>

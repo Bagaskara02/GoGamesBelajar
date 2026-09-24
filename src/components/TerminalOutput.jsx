@@ -151,7 +151,7 @@ export default function TerminalOutput({
 
             {/* Standard Output (stdout) */}
             {output && (
-              <div className="bg-[#f0fdf4] p-3.5 border-2 border-slate-900 text-slate-900 shadow-[3px_3px_0px_#0f172a] font-mono text-lg whitespace-pre-wrap leading-relaxed">
+              <div className="bg-[#f0fdf4] p-3.5 border-2 border-slate-900 text-slate-900 shadow-[3px_3px_0px_#0f172a] font-mono text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">
                 {output}
               </div>
             )}
@@ -172,7 +172,7 @@ export default function TerminalOutput({
             )}
 
             {!output && !error && !isExecuting && (
-              <div className="text-slate-500 py-2 text-sm font-mono">
+              <div className="text-slate-500 py-2 text-xs sm:text-sm font-mono">
                 // Menunggu instruksi... Ketik kodemu lalu tekan tombol JALANKAN.
               </div>
             )}
@@ -182,11 +182,11 @@ export default function TerminalOutput({
             <div className="bg-[#e0f2fe] border-2 border-slate-900 p-2.5 text-slate-900 text-sm leading-relaxed shadow-[2px_2px_0px_#0f172a]">
               ✨ <strong>Validasi Pintar Berbasis Konsep:</strong> Teks tidak harus plek-ketiplek 100% sama persis! Selama konsep & struktur logika Go yang kamu tulis benar, jawabanmu tetap dinilai <strong>BENAR</strong>.
             </div>
-            <div className="text-slate-900 flex items-center space-x-2 font-pixel" style={{ fontSize: '0.45rem' }}>
+            <div className="text-slate-900 flex items-center space-x-2 text-xs font-extrabold uppercase">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span>CONTOH TARGET OUTPUT MISI INI:</span>
+              <span>Contoh Target Output Misi Ini:</span>
             </div>
-            <pre className="bg-[#fef9c3] p-3.5 border-[3px] border-slate-900 text-slate-900 font-mono text-lg whitespace-pre-wrap shadow-[3px_3px_0px_#0f172a]">
+            <pre className="bg-[#fef9c3] p-3.5 border-[3px] border-slate-900 text-slate-900 font-mono text-xs sm:text-sm whitespace-pre-wrap shadow-[3px_3px_0px_#0f172a] leading-relaxed">
               {expectedOutput}
             </pre>
           </div>

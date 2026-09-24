@@ -215,7 +215,7 @@ export default function CodeEditor({
         {/* Line Numbers Gutter */}
         <div
           aria-hidden="true"
-          className="w-12 bg-[#f1f5f9] py-4 select-none text-right pr-3 font-mono text-base text-slate-500 border-r-[2px] border-slate-900 leading-[1.6rem]"
+          className="w-12 bg-[#f1f5f9] py-4 select-none text-right pr-3 font-mono text-xs sm:text-sm text-slate-500 border-r-[2px] border-slate-900 leading-6"
         >
           {Array.from({ length: lineCount }).map((_, i) => (
             <div key={i}>{i + 1}</div>
@@ -230,7 +230,7 @@ export default function CodeEditor({
           onKeyDown={handleKeyDown}
           placeholder="// Tulis kode Golang kamu di sini..."
           spellCheck="false"
-          className="flex-1 w-full bg-transparent text-slate-900 font-mono text-lg p-4 outline-none resize-none leading-[1.6rem] selection:bg-sky-300/50"
+          className="flex-1 w-full bg-transparent text-slate-900 font-mono text-xs sm:text-sm p-4 outline-none resize-none leading-6 selection:bg-sky-300/50"
         />
       </div>
 

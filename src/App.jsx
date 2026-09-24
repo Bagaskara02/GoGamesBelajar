@@ -251,17 +251,14 @@ export default function App() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center flex-wrap gap-1.5 mb-1">
-                <span
-                  className="bg-[#38bdf8] text-slate-950 px-2 py-0.5 border-2 border-slate-900 font-pixel"
-                  style={{ fontSize: '0.46rem' }}
-                >
-                  QUEST LEVEL {currentLevel.id} • VARIASI #{currentMissionIndex + 1}/{totalVariants}
+                <span className="bg-[#38bdf8] text-slate-950 px-2.5 py-0.5 border-2 border-slate-900 text-xs font-extrabold tracking-wide uppercase">
+                  Quest Level {currentLevel.id} • Variasi #{currentMissionIndex + 1}/{totalVariants}
                 </span>
-                <span className="text-xs bg-[#bbf7d0] border-2 border-slate-900 text-slate-900 px-2 py-0.2 font-bold">
+                <span className="text-xs bg-[#bbf7d0] border-2 border-slate-900 text-slate-900 px-2 py-0.5 font-bold">
                   ✓ Validasi Konsep Fleksibel
                 </span>
               </div>
-              <p className="text-sm sm:text-base text-slate-900 font-bold leading-snug">
+              <p className="text-sm sm:text-base text-slate-900 font-semibold leading-relaxed">
                 {currentMission.objective}
               </p>
             </div>
