@@ -1,110 +1,95 @@
-import React from 'react';
-import { Award, ArrowRight, CheckCircle2, RotateCcw, PartyPopper } from 'lucide-react';
-import { soundEffects } from '../utils/soundEffects';
+import React, { useEffect } from 'react';
+import { Trophy, ChevronRight, RefreshCw, X, Star } from 'lucide-react';
+import { playSound } from '../utils/soundEffects';
 
-export default function VictoryModal({
-  isOpen,
-  level,
-  onNextLevel,
-  onStay,
-  isLastLevel
-}) {
+const VictoryModal = ({ isOpen, level, onNextLevel, onStay, isLastLevel }) => {
+  useEffect(() => {
+    if (isOpen) {
+      playSound('victory');
+    }
+  }, [isOpen]);
+
   if (!isOpen || !level) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md bg-white rounded-3xl p-5 sm:p-8 shadow-2xl border border-slate-200 text-center flex flex-col items-center">
-        
-        {/* Close Button to return to simulation */}
-        <button
-          onClick={() => {
-            soundEffects.playClick();
-            onStay();
-          }}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs font-bold transition"
-          title="Tutup & Amati Simulasi"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md font-[Poppins]">
+      {/* Modal Container */}
+      <div 
+        className="w-full max-w-lg relative bg-[#1a1a2e] flex flex-col items-center p-8 animate-in zoom-in duration-500"
+        style={{ 
+          border: '4px solid #f59e0b', 
+          boxShadow: '0 0 30px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.1), 8px 8px 0px rgba(0,0,0,0.8)' 
+        }}
+      >
+        {/* Close Button */}
+        <button 
+          onClick={() => { playSound('click'); onStay(); }}
+          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-white border-2 border-transparent hover:border-gray-500 transition-colors"
         >
-          ✕
+          <X size={20} />
         </button>
 
-        {/* Glow Trophy Icon */}
-        <div className="relative mb-3 sm:mb-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-500 shadow-xl shadow-amber-400/30 flex items-center justify-center text-3xl sm:text-4xl">
+        {/* Trophy Icon */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-yellow-500/20 blur-xl rounded-full animate-pulse"></div>
+          <div className="text-7xl relative z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)] animate-bounce" style={{ animationDuration: '2s' }}>
             🏆
           </div>
         </div>
 
-        <span className="px-3 py-1 rounded-full text-xs font-bold tracking-widest bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase mb-2">
-          MISI LEVEL {level.id} TUNTAS!
-        </span>
-
-        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-2">
-          {isLastLevel ? "SELAMAT! MASTER GOLANG!" : "Kerja Hebat, Engineer!"}
-        </h3>
-
-        <p className="text-slate-600 text-xs sm:text-sm max-w-xs mb-5 sm:mb-6 leading-relaxed">
-          {isLastLevel 
-            ? "Kamu telah menyelesaikan seluruh kurikulum Golang 14 Level dari Pemula sampai Ahli! Kamu sekarang siap membangun aplikasi backend production!" 
-            : `Perangkat sistem '${level.title}' telah stabil dan terkonfigurasi dengan sukses.`}
-        </p>
-
-        {/* Reward Stats Cards */}
-        <div className="w-full grid grid-cols-2 gap-3 mb-5 sm:mb-6">
-          <div className="bg-slate-50 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 flex flex-col items-center">
-            <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">EXP DIDAPAT</span>
-            <span className="text-base sm:text-lg font-black text-amber-600 flex items-center space-x-1 mt-0.5">
-              <span>+150 XP</span>
-              <Award className="w-4 h-4 text-amber-500" />
-            </span>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="text-yellow-400 font-['Press_Start_2P'] text-xs mb-4 tracking-widest uppercase">
+            Level {level.id} Selesai!
           </div>
-          <div className="bg-slate-50 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 flex flex-col items-center">
-            <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">STATUS 2D LAB</span>
-            <span className="text-base sm:text-lg font-black text-emerald-600 flex items-center space-x-1 mt-0.5">
-              <span>100% OK</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </span>
+          <h2 className="text-3xl font-bold text-white font-['Press_Start_2P'] mb-2 text-shadow-lg" style={{ textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>
+            LUAR BIASA!
+          </h2>
+          <p className="text-gray-300 mt-4">
+            Kamu telah berhasil menyelesaikan misi ini dengan sempurna.
+          </p>
+        </div>
+
+        {/* Stats / Rewards Cards */}
+        <div className="grid grid-cols-2 gap-4 w-full mb-8">
+          <div className="bg-[#0f0f23] p-4 border-2 border-[#4a4e69] flex flex-col items-center justify-center relative overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
+            <Star className="text-yellow-400 mb-2 absolute opacity-10 top-2 right-2" size={40} />
+            <div className="text-gray-400 font-['Press_Start_2P'] text-[8px] mb-1 z-10">EXP DIDAPAT</div>
+            <div className="text-2xl font-bold text-green-400 font-['Press_Start_2P'] z-10">+{level.exp || 100}</div>
+          </div>
+          
+          <div className="bg-[#0f0f23] p-4 border-2 border-[#4a4e69] flex flex-col items-center justify-center relative overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
+            <Trophy className="text-blue-400 mb-2 absolute opacity-10 top-2 left-2" size={40} />
+            <div className="text-gray-400 font-['Press_Start_2P'] text-[8px] mb-1 z-10">STATUS</div>
+            <div className="text-lg font-bold text-blue-400 font-['Press_Start_2P'] z-10">SELESAI</div>
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="w-full flex flex-col sm:flex-row gap-2.5 sm:gap-3">
-          <button
-            onClick={() => {
-              soundEffects.playClick();
-              onStay();
-            }}
-            className="flex-1 py-3 px-4 rounded-2xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center space-x-2"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Lihat Simulasi 2D</span>
-          </button>
-
-          {!isLastLevel ? (
-            <button
-              onClick={() => {
-                soundEffects.playSuccess();
-                onNextLevel();
-              }}
-              className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-black tracking-wide transition transform hover:scale-[1.03] active:scale-95 shadow-lg shadow-sky-500/25 flex items-center justify-center space-x-2"
+        {/* Actions */}
+        <div className="w-full flex flex-col gap-3">
+          {!isLastLevel && (
+            <button 
+              onClick={() => { playSound('start'); onNextLevel(); }}
+              className="w-full group relative py-4 bg-green-600 hover:bg-green-500 transition-colors font-['Press_Start_2P'] text-white text-[10px] md:text-xs overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.5)] border-2 border-green-400 flex items-center justify-center gap-2"
+              style={{ textShadow: '1px 1px 0px rgba(0,0,0,0.8)' }}
             >
-              <span>LEVEL BERIKUTNYA</span>
-              <ArrowRight className="w-4 h-4 stroke-[3]" />
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                soundEffects.playSuccess();
-                onStay();
-              }}
-              className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-xs font-black tracking-wide transition shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2"
-            >
-              <PartyPopper className="w-4 h-4" />
-              <span>SELESAI!</span>
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+              <span className="relative z-10">LEVEL BERIKUTNYA</span>
+              <ChevronRight size={18} className="relative z-10 text-green-200" />
             </button>
           )}
+          
+          <button 
+            onClick={() => { playSound('click'); onStay(); }}
+            className="w-full py-3 bg-[#2a2a4a] hover:bg-[#3a3a5a] transition-colors font-['Press_Start_2P'] text-cyan-400 text-[10px] shadow-[4px_4px_0px_rgba(0,0,0,0.5)] border-2 border-[#4a4e69] flex items-center justify-center gap-2"
+          >
+            <RefreshCw size={14} />
+            <span>LIHAT SIMULASI</span>
+          </button>
         </div>
-
       </div>
     </div>
   );
-}
+};
+
+export default VictoryModal;

@@ -63,6 +63,68 @@ func main() {
       expectedOutput: "Booting Core...\nStatus: READY\nMenyalakan Listrik",
       visualTarget: "Nyalakan lampu indikator dan server rack"
     },
+    missionVariants: [
+      {
+        objective: 'Sistem mesin kopi otomatis. Susun 3 baris cetak: 1. "Siapkan Gelas" 2. "Tuang Kopi" 3. "Tambahkan Susu"',
+        targetText: `Siapkan Gelas
+Tuang Kopi
+Tambahkan Susu`,
+        expectedOutput: `Siapkan Gelas
+Tuang Kopi
+Tambahkan Susu`,
+        expectedLines: ["fmt.Println(\"Siapkan Gelas\")", "fmt.Println(\"Tuang Kopi\")", "fmt.Println(\"Tambahkan Susu\")"],
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Susun instruksi mesin kopi:
+    
+}
+`,
+        visualTarget: 'Mesin kopi menyeduh minuman otomatis'
+      },
+      {
+        objective: 'Peluncuran roket luar angkasa. Cetak berurutan: 1. "Hitung Mundur: 3..." 2. "Mesin Menyala" 3. "Roket Meluncur"',
+        targetText: `Hitung Mundur: 3...
+Mesin Menyala
+Roket Meluncur`,
+        expectedOutput: `Hitung Mundur: 3...
+Mesin Menyala
+Roket Meluncur`,
+        expectedLines: ["fmt.Println(\"Hitung Mundur: 3...\")", "fmt.Println(\"Mesin Menyala\")", "fmt.Println(\"Roket Meluncur\")"],
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Susun instruksi peluncuran roket:
+    
+}
+`,
+        visualTarget: 'Roket meluncur ke luar angkasa'
+      },
+      {
+        objective: 'Alarm pagi ceria. Cetak urutan: 1. "Alarm Berbunyi" 2. "Matikan Alarm" 3. "Bangun Tidur"',
+        targetText: `Alarm Berbunyi
+Matikan Alarm
+Bangun Tidur`,
+        expectedOutput: `Alarm Berbunyi
+Matikan Alarm
+Bangun Tidur`,
+        expectedLines: ["fmt.Println(\"Alarm Berbunyi\")", "fmt.Println(\"Matikan Alarm\")", "fmt.Println(\"Bangun Tidur\")"],
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Susun aktivitas pagi:
+    
+}
+`,
+        visualTarget: 'Karakter bangun tidur dengan segar'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -138,6 +200,53 @@ func main() {
       expectedOutput: "Sisa Daya: 110",
       visualTarget: "Stabilkan meteran voltase generator daya ke angka 100%"
     },
+    missionVariants: [
+      {
+        objective: 'Deklarasikan \'stok\' = 500, \'terjual\' = 20, \'hari\' = 7. Hitung \'sisaStok\' = stok - (terjual * hari). Cetak "Sisa Stok: " diikuti nilai sisaStok (output: Sisa Stok: 360)!',
+        targetText: 'Sisa Stok: 360',
+        expectedOutput: 'Sisa Stok: 360',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Hitung sisa stok barang:
+    
+}
+`,
+        visualTarget: 'Update papan gudang menjadi 360'
+      },
+      {
+        objective: 'Deklarasikan \'saldo\' = 100000, \'tarif\' = 15000, \'gerbang\' = 3. Hitung \'sisaSaldo\' = saldo - (tarif * gerbang). Cetak "Sisa Saldo: " diikuti sisaSaldo!',
+        targetText: 'Sisa Saldo: 55000',
+        expectedOutput: 'Sisa Saldo: 55000',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Hitung sisa saldo tol:
+    
+}
+`,
+        visualTarget: 'Gerbang tol terbuka dengan saldo berkurang'
+      },
+      {
+        objective: 'Deklarasikan \'bensin\' = 50, \'konsumsi\' = 5, \'jam\' = 8. Hitung \'sisaBensin\' = bensin - (konsumsi * jam). Cetak "Sisa Bensin: " diikuti sisaBensin!',
+        targetText: 'Sisa Bensin: 10',
+        expectedOutput: 'Sisa Bensin: 10',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Hitung sisa bahan bakar:
+    
+}
+`,
+        visualTarget: 'Jarum indikator bensin mobil turun ke angka 10'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -222,6 +331,56 @@ func main() {
       expectedOutput: "AKSES OTORISASI DITERIMA",
       visualTarget: "Nonaktifkan laser gerbang merah menjadi hijau"
     },
+    missionVariants: [
+      {
+        objective: 'Diberikan \'tiket\' ("VIP-PASS") dan \'umur\' (20). Jika tiket == "VIP-PASS" && umur >= 18, cetak "AKSES VIP DIBERIKAN", selain itu "AKSES DITOLAK".',
+        targetText: 'AKSES VIP DIBERIKAN',
+        expectedOutput: 'AKSES VIP DIBERIKAN',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    tiket := "VIP-PASS"
+    umur := 20
+    
+}
+`,
+        visualTarget: 'Pintu klub malam terbuka untuk VIP'
+      },
+      {
+        objective: 'Diberikan \'kunci\' ("KODE-RAHASIA") dan \'sidikJari\' (true). Jika kunci == "KODE-RAHASIA" && sidikJari, cetak "BRANKAS TERBUKA", selain itu "BRANKAS TERKUNCI".',
+        targetText: 'BRANKAS TERBUKA',
+        expectedOutput: 'BRANKAS TERBUKA',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    kunci := "KODE-RAHASIA"
+    sidikJari := true
+    
+}
+`,
+        visualTarget: 'Pintu brankas bank terbuka otomatis'
+      },
+      {
+        objective: 'Diberikan \'status\' ("AMAN") dan \'suhu\' (80). Jika status == "AMAN" && suhu < 100, cetak "SISTEM NORMAL", selain itu "PERINGATAN BAHAYA".',
+        targetText: 'SISTEM NORMAL',
+        expectedOutput: 'SISTEM NORMAL',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    status := "AMAN"
+    suhu := 80
+    
+}
+`,
+        visualTarget: 'Layar monitor menunjukkan status hijau'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -309,6 +468,72 @@ func main() {
       expectedOutput: "NORMAL: 85\nNORMAL: 90\nKRITIS: 95\nKRITIS: 100",
       visualTarget: "Putar turbin pendingin 3 putaran hingga uap es keluar"
     },
+    missionVariants: [
+      {
+        objective: 'Loop i dari 10 hingga 50 (i += 10). Jika i > 30, cetak "AWAS: i", selain itu "AMAN: i".',
+        targetText: `AMAN: 10
+AMAN: 20
+AMAN: 30
+AWAS: 40
+AWAS: 50`,
+        expectedOutput: `AMAN: 10
+AMAN: 20
+AMAN: 30
+AWAS: 40
+AWAS: 50`,
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Pompa air mengatur debit otomatis'
+      },
+      {
+        objective: 'Loop kecepatan dari 60 hingga 120 (kecepatan += 20). Jika kecepatan >= 100, cetak "TILANG: kecepatan", selain itu "NORMAL: kecepatan".',
+        targetText: `NORMAL: 60
+NORMAL: 80
+TILANG: 100
+TILANG: 120`,
+        expectedOutput: `NORMAL: 60
+NORMAL: 80
+TILANG: 100
+TILANG: 120`,
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Kamera jalan raya mendeteksi mobil ngebut'
+      },
+      {
+        objective: 'Loop baterai dari 10 hingga 30 (baterai += 5). Jika baterai < 20, cetak "LOW: baterai", selain itu "OK: baterai".',
+        targetText: `LOW: 10
+LOW: 15
+OK: 20
+OK: 25
+OK: 30`,
+        expectedOutput: `LOW: 10
+LOW: 15
+OK: 20
+OK: 25
+OK: 30`,
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Indikator baterai handphone mengisi daya'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -395,6 +620,56 @@ func main() {
       expectedOutput: "120 OPTIMAL",
       visualTarget: "Hubungkan dua pipa konverter energi menuju stasiun pusat"
     },
+    missionVariants: [
+      {
+        objective: 'Buat fungsi hitungGaji(kotor int, potongan int) (int, string). bersih = kotor - potongan. Jika bersih >= 5000, return bersih dan "TINGGI", selain itu "STANDAR". Panggil hitungGaji(7000, 1000) dan cetak hasilnya.',
+        targetText: '6000 TINGGI',
+        expectedOutput: '6000 TINGGI',
+        starterCode: `package main
+
+import "fmt"
+
+// Buat fungsi hitungGaji:
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Mesin ATM mengeluarkan uang lembaran'
+      },
+      {
+        objective: 'Buat fungsi cekKelulusan(tugas int, ujian int) (int, string). total = tugas + ujian. Jika total >= 80, return total dan "LULUS", selain itu "REMEDIAL". Panggil cekKelulusan(40, 45) dan cetak hasilnya.',
+        targetText: '85 LULUS',
+        expectedOutput: '85 LULUS',
+        starterCode: `package main
+
+import "fmt"
+
+// Buat fungsi cekKelulusan:
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Raport siswa dicetak dengan stempel lulus'
+      },
+      {
+        objective: 'Buat fungsi hitungJarak(bensin int, efisiensi int) (int, string). jarak = bensin * efisiensi. Jika jarak >= 100, return jarak dan "JAUH", selain itu "DEKAT". Panggil hitungJarak(10, 12) dan cetak hasilnya.',
+        targetText: '120 JAUH',
+        expectedOutput: '120 JAUH',
+        starterCode: `package main
+
+import "fmt"
+
+// Buat fungsi hitungJarak:
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Mobil balap melaju di lintasan panjang'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -492,6 +767,53 @@ func main() {
       expectedOutput: "Node Overload: 2",
       visualTarget: "Pasang 3 unit server rack (Alpha, Beta, Gamma) ke kabinet"
     },
+    missionVariants: [
+      {
+        objective: 'Diberikan umurTamu := []int{15, 20, 12, 25, 18}. Hitung berapa banyak tamu yang umur >= 18. Cetak "Tamu Dewasa: " diikuti jumlahnya.',
+        targetText: 'Tamu Dewasa: 3',
+        expectedOutput: 'Tamu Dewasa: 3',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    umurTamu := []int{15, 20, 12, 25, 18}
+    
+}
+`,
+        visualTarget: 'Penjaga tiket mengizinkan tamu dewasa masuk'
+      },
+      {
+        objective: 'Diberikan hargaMenu := []int{45000, 60000, 30000, 55000, 20000}. Hitung berapa menu yang harganya > 50000. Cetak "Menu Mahal: " diikuti jumlahnya.',
+        targetText: 'Menu Mahal: 2',
+        expectedOutput: 'Menu Mahal: 2',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    hargaMenu := []int{45000, 60000, 30000, 55000, 20000}
+    
+}
+`,
+        visualTarget: 'Kasir restoran mencetak struk mahal'
+      },
+      {
+        objective: 'Diberikan kecepatan := []int{60, 90, 75, 105, 50}. Hitung kendaraan yang kecepatan > 80. Cetak "Pelanggaran: " diikuti jumlahnya.',
+        targetText: 'Pelanggaran: 2',
+        expectedOutput: 'Pelanggaran: 2',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    kecepatan := []int{60, 90, 75, 105, 50}
+    
+}
+`,
+        visualTarget: 'Kamera polisi menangkap pelanggar kecepatan'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -586,6 +908,65 @@ func main() {
       expectedOutput: "Chip Status: 100",
       visualTarget: "Reset register chip memori merah 999 menjadi hijau 100"
     },
+    missionVariants: [
+      {
+        objective: 'Buat fungsi chargeHP(baterai *int). Jika *baterai < 100, ubah nilainya menjadi 100. Panggil fungsi tersebut dengan baterai awal 15. Cetak "Baterai Penuh: " dan nilainya.',
+        targetText: 'Baterai Penuh: 100',
+        expectedOutput: 'Baterai Penuh: 100',
+        starterCode: `package main
+
+import "fmt"
+
+func chargeHP(baterai *int) {
+    
+}
+
+func main() {
+    level := 15
+    
+}
+`,
+        visualTarget: 'Handphone menyala hijau 100%'
+      },
+      {
+        objective: 'Buat fungsi remDarurat(kecepatan *int). Jika *kecepatan > 0, ubah menjadi 0. Panggil dengan kecepatan 80. Cetak "Kecepatan Sekarang: " dan nilainya.',
+        targetText: 'Kecepatan Sekarang: 0',
+        expectedOutput: 'Kecepatan Sekarang: 0',
+        starterCode: `package main
+
+import "fmt"
+
+func remDarurat(kecepatan *int) {
+    
+}
+
+func main() {
+    speed := 80
+    
+}
+`,
+        visualTarget: 'Kereta api berhenti mendadak'
+      },
+      {
+        objective: 'Buat fungsi diskonBesar(harga *int). Jika *harga > 100, kurangi 50 (*harga -= 50). Panggil dengan harga awal 120. Cetak "Harga Diskon: " dan nilainya.',
+        targetText: 'Harga Diskon: 70',
+        expectedOutput: 'Harga Diskon: 70',
+        starterCode: `package main
+
+import "fmt"
+
+func diskonBesar(harga *int) {
+    
+}
+
+func main() {
+    price := 120
+    
+}
+`,
+        visualTarget: 'Label harga toko dicoret menjadi murah'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -685,6 +1066,74 @@ func main() {
       expectedOutput: "GOPHER-1 Sisa Perisai: 100",
       visualTarget: "Luncurkan drone patroli terbang dengan aura perisai pelindung"
     },
+    missionVariants: [
+      {
+        objective: 'Buat struct Mobil(Bensin int). Buat method (m *Mobil) Jalan(km int) yang mengurangi Bensin sebanyak km. Panggil Jalan(10) pada Mobil dengan Bensin 50, cetak "Sisa Bensin: " + bensin.',
+        targetText: 'Sisa Bensin: 40',
+        expectedOutput: 'Sisa Bensin: 40',
+        starterCode: `package main
+
+import "fmt"
+
+type Mobil struct {
+    Bensin int
+}
+
+func (m *Mobil) Jalan(km int) {
+    
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Mobil sedan melaju dan bensin berkurang'
+      },
+      {
+        objective: 'Buat struct Akun(Saldo int). Buat method (a *Akun) Tarik(jml int) yang mengurangi Saldo sebanyak jml. Panggil Tarik(500) pada Akun dengan Saldo 2000, cetak "Sisa Saldo: " + saldo.',
+        targetText: 'Sisa Saldo: 1500',
+        expectedOutput: 'Sisa Saldo: 1500',
+        starterCode: `package main
+
+import "fmt"
+
+type Akun struct {
+    Saldo int
+}
+
+func (a *Akun) Tarik(jml int) {
+    
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Mesin ATM mengeluarkan uang pecahan'
+      },
+      {
+        objective: 'Buat struct Karakter(HP int). Buat method (k *Karakter) Heal(jml int) yang menambah HP sebanyak jml. Panggil Heal(30) pada Karakter dengan HP 40, cetak "HP Sekarang: " + hp.',
+        targetText: 'HP Sekarang: 70',
+        expectedOutput: 'HP Sekarang: 70',
+        starterCode: `package main
+
+import "fmt"
+
+type Karakter struct {
+    HP int
+}
+
+func (k *Karakter) Heal(jml int) {
+    
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Ksatria game RPG minum potion penambah nyawa'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -791,6 +1240,68 @@ func main() {
       expectedOutput: "Nuklir Core-1 Output: 1000 Watt",
       visualTarget: "Aktifkan transceiver satelit penerima sinyal universal"
     },
+    missionVariants: [
+      {
+        objective: 'Buat interface Pekerja dengan method Gaji() int dan Nama() string. Buat struct Manager (return 10000, "Budi"). Buat fungsi CetakGaji(p Pekerja). Panggil fungsi tersebut.',
+        targetText: 'Budi Gaji: 10000',
+        expectedOutput: 'Budi Gaji: 10000',
+        starterCode: `package main
+
+import "fmt"
+
+// Definisikan interface Pekerja dan struct Manager
+
+func CetakGaji(p Pekerja) {
+    fmt.Println(p.Nama(), "Gaji:", p.Gaji())
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Slip gaji karyawan manajer dicetak'
+      },
+      {
+        objective: 'Buat interface Kendaraan dengan method Roda() int dan Merk() string. Buat struct Motor (return 2, "Honda"). Buat fungsi CekKendaraan(k Kendaraan). Panggil fungsi tersebut.',
+        targetText: 'Honda Roda: 2',
+        expectedOutput: 'Honda Roda: 2',
+        starterCode: `package main
+
+import "fmt"
+
+// Definisikan interface Kendaraan dan struct Motor
+
+func CekKendaraan(k Kendaraan) {
+    fmt.Println(k.Merk(), "Roda:", k.Roda())
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Motor sport melintas di garasi balap'
+      },
+      {
+        objective: 'Buat interface Senjata dengan method Damage() int dan Tipe() string. Buat struct Pedang (return 50, "Pedang Besi"). Buat fungsi InfoSenjata(s Senjata). Panggil fungsi tersebut.',
+        targetText: 'Pedang Besi Damage: 50',
+        expectedOutput: 'Pedang Besi Damage: 50',
+        starterCode: `package main
+
+import "fmt"
+
+// Definisikan interface Senjata dan struct Pedang
+
+func InfoSenjata(s Senjata) {
+    fmt.Println(s.Tipe(), "Damage:", s.Damage())
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Karakter game menghunuskan pedang tajam'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -911,6 +1422,83 @@ func main() {
       expectedOutput: "Task: AUTH Selesai\nTask: TELEMETRI Selesai",
       visualTarget: "Armada robot mini worker melesat memproses antrean data"
     },
+    missionVariants: [
+      {
+        objective: 'Fungsi unduh(file string). Jalankan dua goroutine: unduh("Video") dan unduh("Lagu"). Tunggu dengan time.Sleep.',
+        targetText: `Download: Video Selesai
+Download: Lagu Selesai`,
+        expectedOutput: `Download: Video Selesai
+Download: Lagu Selesai`,
+        starterCode: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func unduh(file string) {
+    fmt.Printf("Download: %s Selesai\n", file)
+}
+
+func main() {
+    // Jalankan goroutine unduh
+    
+    time.Sleep(50 * time.Millisecond)
+}
+`,
+        visualTarget: 'Dua bar loading download berjalan cepat bersamaan'
+      },
+      {
+        objective: 'Fungsi masak(menu string). Jalankan dua goroutine: masak("Nasi") dan masak("Ayam"). Tunggu dengan time.Sleep.',
+        targetText: `Memasak: Nasi Selesai
+Memasak: Ayam Selesai`,
+        expectedOutput: `Memasak: Nasi Selesai
+Memasak: Ayam Selesai`,
+        starterCode: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func masak(menu string) {
+    fmt.Printf("Memasak: %s Selesai\n", menu)
+}
+
+func main() {
+    // Jalankan goroutine masak
+    
+    time.Sleep(50 * time.Millisecond)
+}
+`,
+        visualTarget: 'Koki restoran menumis wajan dan menanak nasi'
+      },
+      {
+        objective: 'Fungsi kirimEmail(tujuan string). Jalankan dua goroutine: kirimEmail("Bos") dan kirimEmail("Klien"). Tunggu dengan time.Sleep.',
+        targetText: `Email ke: Bos Terkirim
+Email ke: Klien Terkirim`,
+        expectedOutput: `Email ke: Bos Terkirim
+Email ke: Klien Terkirim`,
+        starterCode: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func kirimEmail(tujuan string) {
+    fmt.Printf("Email ke: %s Terkirim\n", tujuan)
+}
+
+func main() {
+    // Jalankan goroutine kirimEmail
+    
+    time.Sleep(50 * time.Millisecond)
+}
+`,
+        visualTarget: 'Dua amplop surat elektronik melesat di layar'
+      }
+    ],
     starterCode: `package main
 
 import (
@@ -1008,6 +1596,53 @@ func main() {
       expectedOutput: "Tegangan Diterima: 100",
       visualTarget: "Kirim kapsul data bercahaya melintasi pipa pneumatic"
     },
+    missionVariants: [
+      {
+        objective: 'Buat channel string. Di goroutine, kirim pesan "Paket Tiba" ke channel. Di main, terima dan cetak nilainya.',
+        targetText: 'Status: Paket Tiba',
+        expectedOutput: 'Status: Paket Tiba',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Buat channel string
+    
+}
+`,
+        visualTarget: 'Kurir melempar kotak paket ke pintu rumah'
+      },
+      {
+        objective: 'Buat channel int. Di goroutine, hitung harga = 100 + 50 dan kirim ke channel. Di main, terima dan cetak "Total Harga: " + nilainya.',
+        targetText: 'Total Harga: 150',
+        expectedOutput: 'Total Harga: 150',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Buat channel int
+    
+}
+`,
+        visualTarget: 'Mesin kasir menghitung struk total belanja'
+      },
+      {
+        objective: 'Buat channel bool. Di goroutine, evaluasi status = (10 > 5) dan kirim ke channel. Di main, terima dan cetak "Status Valid: " + nilainya.',
+        targetText: 'Status Valid: true',
+        expectedOutput: 'Status Valid: true',
+        starterCode: `package main
+
+import "fmt"
+
+func main() {
+    // Buat channel bool
+    
+}
+`,
+        visualTarget: 'Ceklis hijau besar muncul di layar verifikasi'
+      }
+    ],
     starterCode: `package main
 
 import "fmt"
@@ -1108,6 +1743,92 @@ func main() {
       expectedOutput: "Saldo Brankas Aman: 200",
       visualTarget: "Grendel pintu brankas terkunci hijau dan saldo tersimpan aman"
     },
+    missionVariants: [
+      {
+        objective: 'Variabel viewer = 1000. Fungsi tambahViewer(jumlah int) menggunakan mutex. Panggil tambahViewer(500) lalu cetak viewer.',
+        targetText: 'Total Viewer: 1500',
+        expectedOutput: 'Total Viewer: 1500',
+        starterCode: `package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+var (
+    viewer int = 1000
+    mu     sync.Mutex
+)
+
+func tambahViewer(jumlah int) {
+    // Gunakan lock & unlock
+    
+}
+
+func main() {
+    tambahViewer(500)
+    fmt.Println("Total Viewer:", viewer)
+}
+`,
+        visualTarget: 'Angka penonton live streaming bertambah pesat'
+      },
+      {
+        objective: 'Variabel stok = 50. Fungsi kurangiStok(jumlah int) menggunakan mutex. Panggil kurangiStok(20) lalu cetak stok.',
+        targetText: 'Sisa Gudang: 30',
+        expectedOutput: 'Sisa Gudang: 30',
+        starterCode: `package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+var (
+    stok int = 50
+    mu   sync.Mutex
+)
+
+func kurangiStok(jumlah int) {
+    // Gunakan lock & unlock
+    
+}
+
+func main() {
+    kurangiStok(20)
+    fmt.Println("Sisa Gudang:", stok)
+}
+`,
+        visualTarget: 'Kardus barang di gudang berkurang aman'
+      },
+      {
+        objective: 'Variabel like = 0. Fungsi tambahLike() menggunakan mutex untuk like++. Panggil tambahLike() dan cetak like.',
+        targetText: 'Total Like: 1',
+        expectedOutput: 'Total Like: 1',
+        starterCode: `package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+var (
+    like int = 0
+    mu   sync.Mutex
+)
+
+func tambahLike() {
+    // Gunakan lock & unlock
+    
+}
+
+func main() {
+    tambahLike()
+    fmt.Println("Total Like:", like)
+}
+`,
+        visualTarget: 'Tombol jempol beranimasi klik satu kali'
+      }
+    ],
     starterCode: `package main
 
 import (
@@ -1224,6 +1945,80 @@ func main() {
       expectedOutput: "BAHAYA: Reaktor Overheat\nKatup Darurat Berhasil Ditutup",
       visualTarget: "Tutup katup reaktor otomatis dan pulihkan stabilitas suhu"
     },
+    missionVariants: [
+      {
+        objective: 'Fungsi validasiUmur(umur int) error mengembalikan error jika umur < 18. Di main, pasang defer "Selesai", panggil validasiUmur(15), cetak error.',
+        targetText: `Error: Umur Belum Cukup
+Selesai`,
+        expectedOutput: `Error: Umur Belum Cukup
+Selesai`,
+        starterCode: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+func validasiUmur(umur int) error {
+    if umur < 18 { return errors.New("Error: Umur Belum Cukup") }
+    return nil
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Peringatan sensor batasan umur muncul'
+      },
+      {
+        objective: 'Fungsi bukaFile(nama string) error mengembalikan error jika nama kosong. Di main, pasang defer "Tutup File", panggil bukaFile(""), cetak error.',
+        targetText: `Error: Nama File Kosong
+Tutup File`,
+        expectedOutput: `Error: Nama File Kosong
+Tutup File`,
+        starterCode: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+func bukaFile(nama string) error {
+    if nama == "" { return errors.New("Error: Nama File Kosong") }
+    return nil
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Folder file terkunci dan tidak bisa dibuka'
+      },
+      {
+        objective: 'Fungsi bayar(saldo int, harga int) error mengembalikan error jika harga > saldo. Di main, pasang defer "Transaksi Ditutup", panggil bayar(100, 200), cetak error.',
+        targetText: `Error: Saldo Kurang
+Transaksi Ditutup`,
+        expectedOutput: `Error: Saldo Kurang
+Transaksi Ditutup`,
+        starterCode: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+func bayar(saldo int, harga int) error {
+    if harga > saldo { return errors.New("Error: Saldo Kurang") }
+    return nil
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Mesin kartu kredit menampilkan notifikasi saldo ditolak'
+      }
+    ],
     starterCode: `package main
 
 import (
@@ -1337,6 +2132,74 @@ func main() {
       expectedOutput: `{"status":"ONLINE","server":"Gopher-HQ"}`,
       visualTarget: "Pancarkan sinyal satelit cloud dan nyalakan seluruh grid kota cyberpunk!"
     },
+    missionVariants: [
+      {
+        objective: 'Buat struct Profil dengan Nama string `json:"nama"` dan Umur int `json:"umur"`. Isi dengan "Budi", 25. Marshal dan cetak JSON.',
+        targetText: '{"nama":"Budi","umur":25}',
+        expectedOutput: '{"nama":"Budi","umur":25}',
+        starterCode: `package main
+
+import (
+    "encoding/json"
+    "fmt"
+)
+
+type Profil struct {
+    Nama string \`json:"nama"\`
+    Umur int    \`json:"umur"\`
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Kartu nama digital dikirim ke cloud'
+      },
+      {
+        objective: 'Buat struct Barang dengan Produk string `json:"produk"` dan Harga int `json:"harga"`. Isi dengan "Sepatu", 100000. Marshal dan cetak JSON.',
+        targetText: '{"produk":"Sepatu","harga":100000}',
+        expectedOutput: '{"produk":"Sepatu","harga":100000}',
+        starterCode: `package main
+
+import (
+    "encoding/json"
+    "fmt"
+)
+
+type Barang struct {
+    Produk string \`json:"produk"\`
+    Harga  int    \`json:"harga"\`
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Katalog e-commerce mengunggah item barang'
+      },
+      {
+        objective: 'Buat struct Pesanan dengan ID string `json:"id"` dan Jumlah int `json:"jumlah"`. Isi dengan "ORD-01", 5. Marshal dan cetak JSON.',
+        targetText: '{"id":"ORD-01","jumlah":5}',
+        expectedOutput: '{"id":"ORD-01","jumlah":5}',
+        starterCode: `package main
+
+import (
+    "encoding/json"
+    "fmt"
+)
+
+type Pesanan struct {
+    ID     string \`json:"id"\`
+    Jumlah int    \`json:"jumlah"\`
+}
+
+func main() {
+    
+}
+`,
+        visualTarget: 'Truk pengiriman online memproses kode order'
+      }
+    ],
     starterCode: `package main
 
 import (

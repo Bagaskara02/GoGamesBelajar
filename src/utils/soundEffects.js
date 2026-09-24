@@ -136,3 +136,16 @@ class SoundManager {
 }
 
 export const soundEffects = new SoundManager();
+
+export function playSound(type = 'click') {
+  if (type === 'success' || type === 'victory' || type === 'win') {
+    soundEffects.playSuccess();
+  } else if (type === 'error' || type === 'fail') {
+    soundEffects.playError();
+  } else if (type === 'laser' || type === 'run') {
+    soundEffects.playLaser();
+  } else {
+    soundEffects.playClick();
+  }
+}
+

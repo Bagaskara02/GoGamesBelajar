@@ -6,6 +6,10 @@ import React, { useRef, useEffect } from 'react';
  */
 export default function GameCanvas2D({
   level,
+  mission,
+  missionIndex = 0,
+  totalMissions = 1,
+  onRandomizeMission,
   isSuccess,
   isExecuting,
   onClaimVictory,
@@ -112,48 +116,77 @@ export default function GameCanvas2D({
     };
   }, [level, isSuccess, isExecuting]);
 
+  const activeVisualGoal = mission?.visualTarget || level.visualGoal;
+
   return (
-    <div className="relative w-full h-full bg-white rounded-3xl border border-slate-200/90 shadow-md flex flex-col overflow-hidden transition-all">
-      {/* Top Header Status */}
-      <div className="bg-slate-50/95 px-3 sm:px-4 py-2 sm:py-2.5 border-b border-slate-200 flex items-center justify-between text-xs">
-        <div className="flex items-center space-x-2">
-          <span className={`w-2.5 h-2.5 rounded-full ${isSuccess ? 'bg-emerald-500 animate-ping' : 'bg-sky-500 animate-pulse'}`}></span>
-          <span className="font-bold text-slate-800 tracking-wide text-[11px] sm:text-xs">
-            SIMULASI 2D CYBER-LAB
+    <div className="relative w-full h-full bg-[#0f0f23] border-4 border-indigo-900 flex flex-col overflow-hidden transition-all">
+      {/* Top Header Status - Pixel Art Style */}
+      <div className="bg-[#1a1a2e] px-2.5 sm:px-4 py-2 border-b-4 border-indigo-900 flex items-center justify-between gap-2 text-xs">
+        <div className="flex items-center space-x-2 min-w-0">
+          <span className={`w-2.5 h-2.5 shrink-0 ${isSuccess ? 'bg-[#39ff14] animate-ping' : 'bg-[#00d4ff] animate-pulse'}`}></span>
+          <span
+            className="text-cyan-300 tracking-wider truncate"
+            style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.52rem' }}
+          >
+            8-BIT SIMULATOR
           </span>
+          {totalMissions > 1 && (
+            <span
+              className="hidden xs:inline-block px-1.5 py-0.5 bg-indigo-950 border border-indigo-500 text-indigo-300"
+              style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.42rem' }}
+            >
+              MISI #{missionIndex + 1}/{totalMissions}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+          {/* Randomize Mission Button */}
+          {onRandomizeMission && totalMissions > 1 && (
+            <button
+              onClick={onRandomizeMission}
+              className="flex items-center space-x-1 px-2 py-1 bg-purple-900/80 hover:bg-purple-700 text-purple-200 border-2 border-purple-400 shadow-[2px_2px_0px_#000] active:translate-y-[1px] transition text-[10px] font-bold"
+              title="Acak variasi misi baru di level ini untuk latihan ulang"
+            >
+              <span>🎲</span>
+              <span className="hidden sm:inline" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.42rem' }}>
+                ACAK MISI
+              </span>
+            </button>
+          )}
+
           {/* Victory Claim Button in Header when solved */}
           {isSuccess && onClaimVictory && (
             <button
               onClick={onClaimVictory}
-              className="flex items-center space-x-1 px-2.5 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 rounded-xl font-black text-[10px] sm:text-[11px] shadow-sm shadow-amber-500/20 active:scale-95 transition"
+              className="flex items-center space-x-1 px-2.5 py-1 bg-[#ffd700] hover:bg-yellow-300 text-[#0f0f23] border-2 border-white shadow-[2px_2px_0px_#000] active:translate-y-[1px] transition"
+              style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.45rem' }}
               title="Buka Ringkasan Level Berikutnya"
             >
               <span>🏆</span>
-              <span>BUKA HASIL</span>
+              <span>HASIL</span>
             </button>
           )}
 
           <span
-            className={`px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide transition-all ${
+            className={`px-2 py-1 border-2 transition-all ${
               isSuccess
-                ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                : 'bg-amber-100 text-amber-700 border border-amber-300'
+                ? 'bg-emerald-950 text-[#39ff14] border-[#39ff14]'
+                : 'bg-amber-950 text-amber-300 border-amber-500'
             }`}
+            style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.42rem' }}
           >
-            {isSuccess ? '● AKTIF & STABIL' : '○ MENUNGGU KODE'}
+            {isSuccess ? '★ STABIL' : '● STANDBY'}
           </span>
 
           {/* Optional collapse toggle on small screens */}
           {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
-              className="p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition lg:hidden"
+              className="px-1.5 py-0.5 bg-[#0f0f23] border border-indigo-600 text-indigo-300 hover:text-white transition lg:hidden text-[10px] font-bold"
               title={isCollapsed ? "Tampilkan Kanvas Penuh" : "Sembunyikan Kanvas Sementara"}
             >
-              <span className="text-[11px] font-bold">{isCollapsed ? '▼ Buka' : '▲ Lipat'}</span>
+              <span>{isCollapsed ? '▼' : '▲'}</span>
             </button>
           )}
         </div>
@@ -161,31 +194,31 @@ export default function GameCanvas2D({
 
       {/* Canvas Viewport (Hidden if collapsed) */}
       {!isCollapsed ? (
-        <div className="relative flex-1 w-full h-full flex items-center justify-center p-1.5 sm:p-2 bg-slate-900 overflow-hidden">
+        <div className="relative flex-1 w-full h-full flex items-center justify-center p-1.5 sm:p-2 bg-[#090d1a] overflow-hidden scanlines">
           <canvas
             ref={canvasRef}
             width={640}
             height={320}
-            className="w-full h-full object-contain rounded-2xl"
+            className="w-full h-full object-contain border-2 border-indigo-950"
           />
 
           {/* Level Goal Watermark on bottom-right */}
-          <div className="absolute bottom-2 right-2.5 sm:bottom-3 sm:right-4 bg-slate-900/85 backdrop-blur-md border border-slate-700/60 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-[11px] text-slate-300 flex items-center space-x-1.5 max-w-[85%] truncate shadow-md">
-            <span className="text-sky-400 font-bold flex-shrink-0">⚡ Target:</span>
-            <span className="font-semibold text-white truncate">{level.visualGoal}</span>
+          <div className="absolute bottom-2 right-2.5 sm:bottom-3 sm:right-3 bg-[#0f0f23]/95 border-2 border-cyan-500/60 px-2.5 py-1 text-[10px] sm:text-[11px] text-slate-200 flex items-center space-x-1.5 max-w-[88%] truncate shadow-[2px_2px_0px_#000]">
+            <span className="text-cyan-400 font-bold flex-shrink-0">⚡ Misi:</span>
+            <span className="font-semibold text-white truncate">{activeVisualGoal}</span>
           </div>
         </div>
       ) : (
-        <div className="p-2.5 bg-slate-900 flex items-center justify-between text-slate-300 text-xs">
+        <div className="p-2.5 bg-[#090d1a] flex items-center justify-between text-slate-200 text-xs">
           <div className="flex items-center space-x-2 truncate">
             <span className="text-base">🐹</span>
-            <span className="truncate text-slate-200 font-medium">Target: {level.visualGoal}</span>
+            <span className="truncate text-cyan-200 font-medium">Misi: {activeVisualGoal}</span>
           </div>
           <button
             onClick={onToggleCollapse}
-            className="text-sky-400 font-bold text-xs hover:underline flex-shrink-0 ml-2"
+            className="text-cyan-400 font-bold text-xs hover:underline flex-shrink-0 ml-2"
           >
-            Lihat Animasi 2D
+            Buka Kanvas 2D
           </button>
         </div>
       )}

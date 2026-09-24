@@ -1,419 +1,701 @@
 /**
- * Code Validator & Golang Simulator Engine
- * Memvalidasi logika dan sintaks Go untuk tantangan kurikulum tingkat lanjut.
+ * Code Validator & Smart Golang Diagnostic Engine
+ * - Validasi berbasis KONSEP (tidak harus plek-ketiplek sama persis kata-katanya)
+ * - Diagnostik spesifik per baris: menunjukkan nomor baris, potongan kode yang salah,
+ *   apa yang membuat error, dan petunjuk perbaikan tanpa membocorkan jawaban langsung.
  */
 
-export function validateGolangCode(userCode, level) {
-  const code = (userCode || "").trim();
-  const logs = [];
+export function validateGolangCode(userCode, level, mission) {
+  const rawCode = userCode || "";
+  const code = rawCode.trim();
+  const rawLines = rawCode.split('\n');
 
-  // Pengecekan dasar struktur file Go
+  // Helper: cari nomor baris (1-indexed) berdasarkan regex (mengabaikan baris komentar)
+  function findLine(regex, startFromLine = 1) {
+    for (let i = startFromLine - 1; i < rawLines.length; i++) {
+      const cleanLine = rawLines[i].replace(/\/\/.*$/, '');
+      if (regex.test(cleanLine)) return i + 1;
+    }
+    return null;
+  }
+
+  // Helper: ambil isi kode pada baris tertentu
+  function getLineContent(lineNum) {
+    if (!lineNum || lineNum < 1 || lineNum > rawLines.length) return "";
+    return rawLines[lineNum - 1].trim();
+  }
+
+  // Helper: buat objek diagnostik terstruktur
+  function makeError({ line, errorTitle, compilerMsg, cause, hint }) {
+    const snippet = getLineContent(line);
+    return {
+      success: false,
+      output: compilerMsg || `main.go:${line || 1}: syntax/concept error`,
+      error: `${errorTitle}${line ? ` (Baris ke-${line})` : ''}`,
+      diagnostics: {
+        line: line || 1,
+        codeSnippet: snippet,
+        cause: cause,
+        message: cause,
+        hint: hint
+      }
+    };
+  }
+
+  // 0. Cek apakah editor kosong
   if (!code) {
-    return {
-      success: false,
-      output: "",
-      error: "Kompilasi Gagal: Editor masih kosong!",
-      diagnostics: "Tuliskan kodemu atau klik tombol 'Reset' untuk memuat starter code."
-    };
+    return makeError({
+      line: 1,
+      errorTitle: "Editor Kode Masih Kosong",
+      compilerMsg: "go build: no Go code found in main.go",
+      cause: "Tidak ada instruksi kode sama sekali di dalam editor.",
+      hint: "Mulai ketikkan struktur program Go kamu atau tekan tombol 'Reset' untuk memunculkan kerangka awal."
+    });
   }
 
-  // 1. Cek package main
-  if (!/package\s+main\b/.test(code)) {
-    return {
-      success: false,
-      output: "syntax error: package statement missing or not main",
-      error: "Kompilasi Gagal: Program executable membutuhkan deklarasi package utama.",
-      diagnostics: "Setiap file program mandiri di Go wajib diawali dengan pendefinisian package khusus di baris pertama."
-    };
+  // ============================================================================
+  // TAHAP 1: ANALISIS SINTAKS BARIS-DEMI-BARIS (Mendeteksi letak salah secara spesifik)
+  // ============================================================================
+  let openBraces = 0;
+  let lastOpenBraceLine = 1;
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const lineNum = i + 1;
+    const withoutComment = rawLines[i].replace(/\/\/.*$/, '');
+    const trimmed = withoutComment.trim();
+    if (!trimmed) continue;
+
+    // 1a. Cek tanda kutip ganda (") yang tidak ditutup pada satu baris (abaikan backtick `)
+    if (!trimmed.includes('`')) {
+      const doubleQuotes = (trimmed.match(/(?<!\\)"/g) || []).length;
+      if (doubleQuotes % 2 !== 0) {
+        return makeError({
+          line: lineNum,
+          errorTitle: "Tanda Kutip String Belum Ditutup",
+          compilerMsg: `./main.go:${lineNum}: syntax error: newline in string`,
+          cause: `Pada baris ke-${lineNum} (${trimmed}), kamu membuka tanda kutip ganda (") tetapi lupa menutupnya di akhir teks.`,
+          hint: `Tambahkan tanda kutip ganda (") di ujung teks pada baris ke-${lineNum} agar menjadi string yang utuh.`
+        });
+      }
+    }
+
+    // 1b. Cek penggunaan tanda kutip satu (') untuk teks panjang (di Go ' hanya untuk 1 karakter/rune)
+    const singleQuoteString = trimmed.match(/'([^']{2,})'/);
+    if (singleQuoteString) {
+      return makeError({
+        line: lineNum,
+        errorTitle: "Salah Menggunakan Tanda Kutip Tunggal (')",
+        compilerMsg: `./main.go:${lineNum}: more than one character in rune literal`,
+        cause: `Pada baris ke-${lineNum}, kamu membungkus teks '${singleQuoteString[1]}' dengan kutip satu ('). Di Golang, kutip satu hanya boleh untuk 1 karakter (rune).`,
+        hint: `Ganti tanda kutip satu (') pada baris ke-${lineNum} menjadi tanda kutip dua (") seperti "${singleQuoteString[1]}".`
+      });
+    }
+
+    // 1c. Cek kesalahan huruf besar/kecil pada fmt.Println / fmt.Printf / fmt.Sprint
+    if (/\bfmt\.(println|printf|print|sprintf|scanln)\b/.test(trimmed)) {
+      const wrongCall = trimmed.match(/\bfmt\.(println|printf|print|sprintf|scanln)\b/)[0];
+      const fixedCall = wrongCall.replace('fmt.p', 'fmt.P').replace('fmt.s', 'fmt.S');
+      return makeError({
+        line: lineNum,
+        errorTitle: `Huruf Awal Fungsi '${wrongCall}' Harus Kapital`,
+        compilerMsg: `./main.go:${lineNum}: cannot refer to unexported name ${wrongCall}`,
+        cause: `Di baris ke-${lineNum} (${trimmed}), kamu menulis '${wrongCall}' dengan huruf kecil. Di Golang, fungsi dari package lain wajib diawali huruf KAPITAL agar bersifat publik (Exported).`,
+        hint: `Ubah '${wrongCall}' di baris ke-${lineNum} menjadi '${fixedCall}'.`
+      });
+    }
+
+    // 1d. Cek tanda kurung biasa ( ) yang tidak seimbang pada baris tersebut
+    const cleanStrings = trimmed.replace(/"[^"]*"/g, '""');
+    const openParens = (cleanStrings.match(/\(/g) || []).length;
+    const closeParens = (cleanStrings.match(/\)/g) || []).length;
+    if (openParens !== closeParens && !trimmed.endsWith(',') && !trimmed.endsWith('(')) {
+      return makeError({
+        line: lineNum,
+        errorTitle: "Tanda Kurung '(' dan ')' Tidak Seimbang",
+        compilerMsg: `./main.go:${lineNum}: syntax error: unexpected newline, expecting )`,
+        cause: `Pada baris ke-${lineNum} (${trimmed}), jumlah kurung buka '(' (${openParens}) tidak sama dengan kurung tutup ')' (${closeParens}).`,
+        hint: `Periksa kembali baris ke-${lineNum} dan pastikan setiap panggilan fungsi ditutup dengan tanda ')'.`
+      });
+    }
+
+    // 1e. Hitung keseimbangan kurung kurawal { }
+    for (const ch of cleanStrings) {
+      if (ch === '{') {
+        openBraces++;
+        lastOpenBraceLine = lineNum;
+      } else if (ch === '}') {
+        openBraces--;
+        if (openBraces < 0) {
+          return makeError({
+            line: lineNum,
+            errorTitle: "Kelebihan Kurung Kurawal Tutup '}'",
+            compilerMsg: `./main.go:${lineNum}: syntax error: unexpected }`,
+            cause: `Pada baris ke-${lineNum}, terdapat kurung kurawal tutup '}' yang tidak memiliki pasangan '{' pembuka.`,
+            hint: `Hapus tanda '}' berlebih pada baris ke-${lineNum} atau pastikan blok fungsi/if di atasnya memiliki '{'.`
+          });
+        }
+      }
+    }
   }
 
-  // 2. Cek func main()
-  if (!/func\s+main\s*\(\s*\)/.test(code)) {
-    return {
-      success: false,
-      output: "undefined: main.main",
-      error: "Kompilasi Gagal: Fungsi utama func main() tidak ditemukan!",
-      diagnostics: "Compiler Go mencari fungsi gerbang utama tempat program mulai berjalan. Buat func main() { ... }."
-    };
+  if (openBraces > 0) {
+    return makeError({
+      line: rawLines.length,
+      errorTitle: "Kurung Kurawal '{' Belum Ditutup",
+      compilerMsg: `./main.go:${rawLines.length}: syntax error: unexpected EOF, expecting }`,
+      cause: `Blok kode yang dibuka di sekitar baris ke-${lastOpenBraceLine} belum ditutup dengan tanda kurung kurawal tutup '}'.`,
+      hint: `Tambahkan tanda '}' di bagian akhir blok atau di baris paling bawah programmu.`
+    });
   }
 
-  const cleanCode = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''); // Hapus komentar untuk analisis
+  // ============================================================================
+  // TAHAP 2: PENGECEKAN STRUKTUR WAJIB PROGRAM GOLANG
+  // ============================================================================
+  const wrongPkgLine = findLine(/^\s*(pakage|Package|package\s+Main)/);
+  if (wrongPkgLine) {
+    return makeError({
+      line: wrongPkgLine,
+      errorTitle: "Penulisan 'package main' Kurang Tepat",
+      compilerMsg: `./main.go:${wrongPkgLine}: syntax error: invalid package declaration`,
+      cause: `Pada baris ke-${wrongPkgLine} (${getLineContent(wrongPkgLine)}), terdapat salah ketik atau huruf kapital pada deklarasi package.`,
+      hint: `Gunakan huruf kecil semua: tulis 'package main' di baris ke-${wrongPkgLine}.`
+    });
+  }
 
+  const pkgLine = findLine(/\bpackage\s+main\b/);
+  if (!pkgLine) {
+    return makeError({
+      line: 1,
+      errorTitle: "Deklarasi 'package main' Tidak Ditemukan",
+      compilerMsg: "./main.go:1:1: expected 'package', found code",
+      cause: "Setiap file program utama di Golang wajib memiliki deklarasi 'package main' di bagian paling atas.",
+      hint: "Tambahkan 'package main' pada baris pertama editor."
+    });
+  }
+
+  const wrongImportLine = findLine(/^\s*import\s+fmt\b/);
+  if (wrongImportLine) {
+    return makeError({
+      line: wrongImportLine,
+      errorTitle: "Nama Package Import Kurang Tanda Kutip",
+      compilerMsg: `./main.go:${wrongImportLine}: syntax error: import path must be a string`,
+      cause: `Pada baris ke-${wrongImportLine} (${getLineContent(wrongImportLine)}), nama package 'fmt' ditulis tanpa tanda kutip ganda.`,
+      hint: `Bungkus nama package dengan tanda kutip ganda pada baris ke-${wrongImportLine} menjadi: import "fmt"`
+    });
+  }
+
+  const mainFuncLine = findLine(/\bfunc\s+main\s*\(\s*\)/);
+  if (!mainFuncLine) {
+    const anyFuncLine = findLine(/\bfunc\b/) || pkgLine + 2;
+    return makeError({
+      line: anyFuncLine,
+      errorTitle: "Fungsi Gerbang Utama 'func main()' Tidak Ditemukan",
+      compilerMsg: "runtime.main_main: function main is undeclared in the main package",
+      cause: `Program mandiri Go membutuhkan 'func main()' sebagai titik awal eksekusi, namun belum ditemukan di sekitar baris ke-${anyFuncLine}.`,
+      hint: "Pastikan kamu menuliskan 'func main() {' dengan huruf kecil semua."
+    });
+  }
+
+  // Bersihkan komentar untuk pemeriksaan konsep
+  const cleanCode = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+  const expectedOutput = mission?.expectedOutput || level?.expectedOutput || "Program berhasil dijalankan!";
+
+  // Helper: ekstrak semua isi cetakan fmt.Print* dari kode user agar simulasi terasa nyata
+  function extractPrintedOutputs() {
+    const matches = [...cleanCode.matchAll(/fmt\.Print(?:ln|f)?\s*\(([^)]+)\)/g)];
+    if (matches.length === 0) return expectedOutput;
+    const extracted = matches.map(m => {
+      // Ambil isi argumen dan bersihkan tanda kutip jika murni string
+      const rawArgs = m[1].split(',').map(arg => {
+        const s = arg.trim();
+        if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith('`') && s.endsWith('`'))) {
+          return s.slice(1, -1);
+        }
+        return null;
+      });
+      if (rawArgs.every(a => a !== null)) {
+        return rawArgs.join(' ');
+      }
+      return null;
+    });
+    if (extracted.every(e => e !== null) && extracted.length > 0) {
+      return extracted.join('\n');
+    }
+    return expectedOutput;
+  }
+
+  // ============================================================================
+  // TAHAP 3: VALIDASI BERBASIS KONSEP PER LEVEL (Fleksibel, Tidak Harus Plek-Ketiplek!)
+  // ============================================================================
   switch (level.id) {
-    case 1: { // Booting The Core (3 Tahap Urutan)
-      const hasBoot = /fmt\.Println\s*\(\s*["']Booting Core\.\.\.["']\s*\)/.test(cleanCode);
-      const hasReady = /fmt\.Println\s*\(\s*["']Status: READY["']\s*\)/.test(cleanCode);
-      const hasPower = /fmt\.Println\s*\(\s*["']Menyalakan Listrik["']\s*\)/.test(cleanCode);
-
-      if (!hasBoot || !hasReady || !hasPower) {
-        return {
-          success: false,
-          output: "Hardware Status: Boot sequence tidak lengkap...",
-          error: "Urutan 3 tahap inisialisasi boot belum lengkap!",
-          diagnostics: "Pastikan kamu mencetak 3 instruksi secara berurutan: \"Booting Core...\", \"Status: READY\", dan \"Menyalakan Listrik\" masing-masing menggunakan fmt.Println."
-        };
+    case 1: {
+      // Konsep Level 1: import "fmt" + minimal 3 pemanggilan fmt.Println dengan isi tidak kosong
+      if (!findLine(/import\s+"fmt"|import\s*\([\s\S]*?"fmt"/)) {
+        return makeError({
+          line: pkgLine + 1,
+          errorTitle: "Package 'fmt' Belum Di-import",
+          compilerMsg: `./main.go:${mainFuncLine + 1}: undefined: fmt`,
+          cause: "Kamu mencoba mencetak teks ke layar, tetapi pustaka standar \"fmt\" belum di-import di bawah package main.",
+          hint: `Tambahkan baris import "fmt" di sekitar baris ke-${pkgLine + 1}.`
+        });
       }
-      logs.push("Booting Core...\nStatus: READY\nMenyalakan Listrik");
-      break;
+
+      const printCalls = [...cleanCode.matchAll(/fmt\.Print(?:ln|f)?\s*\(\s*([^)]*)\s*\)/g)];
+      const validPrints = printCalls.filter(m => m[1] && m[1].trim().length > 0);
+
+      if (validPrints.length < 3) {
+        const errLine = findLine(/fmt\.Print/) || mainFuncLine + 1;
+        return makeError({
+          line: errLine,
+          errorTitle: `Jumlah Baris Cetak Baru ${validPrints.length} dari 3 Tahap`,
+          compilerMsg: `Output kurang lengkap: ditemukan ${validPrints.length} instruksi cetak, dibutuhkan minimal 3 tahap berurutan.`,
+          cause: `Misi ini melatih konsep eksekusi berurutan (top-to-bottom) dengan 3 tahap output, tetapi di dalam func main() baru ada ${validPrints.length} panggilan fmt.Println yang berisi teks.`,
+          hint: `Pastikan ada 3 baris pemanggilan fmt.Println("...") di dalam func main() mulai dari baris ke-${mainFuncLine + 1}. (Teks tidak harus sama persis huruf per huruf, yang penting ada 3 tahap pesan inisialisasi!)`
+        });
+      }
+
+      return {
+        success: true,
+        output: extractPrintedOutputs(),
+        diagnostics: {
+          message: "Konsep struktur dasar Go & urutan eksekusi 3 tahap sudah tepat!"
+        }
+      };
     }
 
-    case 2: { // Power Grid (Rumus: kapasitas - (beban * durasi))
-      const hasKapasitas = /(kapasitas\s*:=\s*200|var\s+kapasitas\s*(int)?\s*=\s*200)/.test(cleanCode);
-      const hasBeban = /(beban\s*:=\s*45|var\s+beban\s*(int)?\s*=\s*45)/.test(cleanCode);
-      const hasDurasi = /(durasi\s*:=\s*2|var\s+durasi\s*(int)?\s*=\s*2)/.test(cleanCode);
-      const hasFormula = /kapasitas\s*-\s*\(\s*beban\s*\*\s*durasi\s*\)|kapasitas\s*-\s*beban\s*\*\s*durasi/.test(cleanCode);
-      const hasPrint = /fmt\.Println\s*\(\s*["']Sisa Daya:["']\s*,\s*sisaDaya\s*\)/.test(cleanCode) || /fmt\.Println\s*\(.*110.*\)/.test(cleanCode);
+    case 2: {
+      // Konsep Level 2: Deklarasi variabel + operasi aritmatika (+, -, *, /) + cetak hasil
+      const varDecls = [...cleanCode.matchAll(/(?:\bvar\s+\w+|\w+\s*:=)\s*([^\n;]+)/g)];
+      if (varDecls.length < 2) {
+        return makeError({
+          line: mainFuncLine + 1,
+          errorTitle: "Deklarasi Variabel Belum Lengkap",
+          compilerMsg: `./main.go:${mainFuncLine + 1}: missing variable declarations for calculation`,
+          cause: `Baru ditemukan ${varDecls.length} variabel di dalam func main(). Misi ini membutuhkan variabel untuk menampung angka input dan variabel hasil perhitungan.`,
+          hint: `Deklarasikan variabel menggunakan operator ':=' di bawah baris ke-${mainFuncLine}, lalu simpan rumus perhitungannya ke dalam variabel baru.`
+        });
+      }
 
-      if (!hasKapasitas || !hasBeban || !hasDurasi) {
-        return {
-          success: false,
-          output: "undefined: variabel daya baterai",
-          error: "Variabel kalkulasi daya belum lengkap!",
-          diagnostics: "Deklarasikan variabel kapasitas (200), beban (45), dan durasi (2) dengan operator ':='."
-        };
+      // Cek apakah ada rumus matematika menggunakan operator +, -, *, atau /
+      const hasFormulaLine = findLine(/[a-zA-Z0-9_)\s][\+\-\*\/]\s*[a-zA-Z0-9_(]/, mainFuncLine);
+      if (!hasFormulaLine) {
+        return makeError({
+          line: mainFuncLine + 2,
+          errorTitle: "Rumus Kalkulasi Aritmatika Belum Ditemukan",
+          compilerMsg: `./main.go:${mainFuncLine + 2}: arithmetic operator (+, -, *, /) not found`,
+          cause: "Kamu sudah membuat variabel, tetapi belum menghitung hasilnya menggunakan operator matematika (seperti -, *, +).",
+          hint: `Buat satu variabel hasil di sekitar baris ke-${mainFuncLine + 2} yang menghitung variabel-variabel sebelumnya dengan operator matematika (misal: hasil := a - (b * c)).`
+        });
       }
-      if (!hasFormula) {
-        return {
-          success: false,
-          output: "rumus kalkulasi sisa daya belum tepat",
-          error: "Perhitungan sisa daya belum menerapkan rumus formula!",
-          diagnostics: "Hitung sisa daya dengan rumus: sisaDaya := kapasitas - (beban * durasi)."
-        };
+
+      const printLine = findLine(/fmt\.Print/, mainFuncLine);
+      if (!printLine) {
+        return makeError({
+          line: hasFormulaLine + 1,
+          errorTitle: "Hasil Perhitungan Belum Dicetak",
+          compilerMsg: `./main.go:${hasFormulaLine}: variable declared and not used`,
+          cause: `Di Go, variabel hasil yang sudah dihitung di baris ke-${hasFormulaLine} wajib digunakan/dicetak. Jika tidak, compiler Go akan menolak kompilasi.`,
+          hint: `Tambahkan fmt.Println(...) di baris ke-${hasFormulaLine + 1} untuk menampilkan variabel hasil perhitunganmu.`
+        });
       }
-      if (!hasPrint) {
-        return {
-          success: false,
-          output: "sisaDaya declared and not used",
-          error: "Cetak hasil perhitungan dengan teks awalan!",
-          diagnostics: "Gunakan fmt.Println(\"Sisa Daya:\", sisaDaya) untuk melaporkan hasil perhitungan ke meteran."
-        };
-      }
-      logs.push("Sisa Daya: 110");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep deklarasi variabel dan operasi aritmatika Go sudah benar!" }
+      };
     }
 
-    case 3: { // Firewall Security Gate (Multi-Kriteria &&)
-      const hasAndCondition = /if\s+token\s*==\s*["']GOPHER-SEC["']\s*&&\s*izinLevel\s*>=\s*3/.test(cleanCode) ||
-                              /if\s+izinLevel\s*>=\s*3\s*&&\s*token\s*==\s*["']GOPHER-SEC["']/.test(cleanCode);
-      const hasPrintSuccess = /fmt\.Println\s*\(\s*["']AKSES OTORISASI DITERIMA["']\s*\)/.test(cleanCode);
+    case 3: {
+      // Konsep Level 3: Percabangan if dengan operator logika (&& atau ||) + perbandingan
+      const ifLine = findLine(/\bif\b/, mainFuncLine);
+      if (!ifLine) {
+        return makeError({
+          line: mainFuncLine + 2,
+          errorTitle: "Percabangan 'if' Belum Digunakan",
+          compilerMsg: `./main.go:${mainFuncLine + 2}: missing conditional 'if' statement`,
+          cause: "Misi ini menguji konsep evaluasi syarat kondisi menggunakan pernyataan 'if', namun belum ditemukan blok 'if' di dalam func main().",
+          hint: `Tambahkan pernyataan 'if syarat1 && syarat2 { ... }' di sekitar baris ke-${mainFuncLine + 2}.`
+        });
+      }
 
-      if (!hasAndCondition) {
-        return {
-          success: false,
-          output: "syntax error: logika verifikasi belum memenuhi standar ganda",
-          error: "Kondisi otorisasi belum menggabungkan kedua syarat dengan operator &&!",
-          diagnostics: "Gunakan operator logika '&&' untuk memastikan token cocok dan izinLevel >= 3."
-        };
+      const hasLogicOp = /\bif\s+[^{]*(&&|\|\|)/.test(cleanCode);
+      if (!hasLogicOp) {
+        return makeError({
+          line: ifLine,
+          errorTitle: "Operator Logika Ganda (&&) Belum Dipakai di 'if'",
+          compilerMsg: `./main.go:${ifLine}: single condition detected, expected compound logic (&&)`,
+          cause: `Pada baris ke-${ifLine} (${getLineContent(ifLine)}), kamu baru memeriksa satu kondisi saja. Gerbang keamanan membutuhkan verifikasi 2 syarat sekaligus.`,
+          hint: `Gabungkan kedua syarat pada baris ke-${ifLine} menggunakan operator '&&' (AND), contoh: if syaratA && syaratB {`
+        });
       }
-      if (!hasPrintSuccess) {
-        return {
-          success: false,
-          output: "Laser firewall masih aktif...",
-          error: "Pesan keberhasilan belum tercetak di dalam blok if!",
-          diagnostics: "Cetak \"AKSES OTORISASI DITERIMA\" ketika kedua syarat terpenuhi."
-        };
+
+      if (!findLine(/fmt\.Print/, ifLine)) {
+        return makeError({
+          line: ifLine + 1,
+          errorTitle: "Belum Mencetak Status di Dalam Blok Kondisi",
+          compilerMsg: `./main.go:${ifLine + 1}: empty conditional body`,
+          cause: `Blok 'if' pada baris ke-${ifLine} belum mencetak pesan hasil otorisasi ke terminal.`,
+          hint: `Tambahkan fmt.Println(...) di dalam blok kurung kurawal setelah baris ke-${ifLine}.`
+        });
       }
-      logs.push("AKSES OTORISASI DITERIMA");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep percabangan if dan operator logika && sudah tepat!" }
+      };
     }
 
-    case 4: { // Reactor Cooling Loop (For Loop dengan Filter Suhu)
-      const hasForLoop = /for\s+suhu\s*:=\s*85;\s*suhu\s*<=\s*100;\s*suhu\s*\+=\s*5/.test(cleanCode);
-      const hasFilter = /if\s+suhu\s*>\s*90/.test(cleanCode);
-      const hasPrintKritis = /fmt\.Println\s*\(\s*["']KRITIS:["']\s*,\s*suhu\s*\)/.test(cleanCode);
-      const hasPrintNormal = /fmt\.Println\s*\(\s*["']NORMAL:["']\s*,\s*suhu\s*\)/.test(cleanCode);
+    case 4: {
+      // Konsep Level 4: Perulangan for + percabangan if di dalam loop
+      const forLine = findLine(/\bfor\b/, mainFuncLine);
+      if (!forLine) {
+        return makeError({
+          line: mainFuncLine + 1,
+          errorTitle: "Perulangan 'for' Tidak Ditemukan",
+          compilerMsg: `./main.go:${mainFuncLine + 1}: missing 'for' loop construct`,
+          cause: "Untuk memantau perubahan nilai secara bertahap, kamu wajib menggunakan perulangan 'for', bukan menulis manual satu per satu.",
+          hint: `Buat perulangan 'for' di baris ke-${mainFuncLine + 1} dengan format: for variabel := awal; variabel <= batas; variabel += step {`
+        });
+      }
 
-      if (!hasForLoop) {
-        return {
-          success: false,
-          output: "loop step invalid",
-          error: "Pengaturan kenaikan for loop belum tepat!",
-          diagnostics: "Pastikan loop dimulai dari suhu := 85, batas suhu <= 100, dan kenaikan suhu += 5."
-        };
+      const ifInLoopLine = findLine(/\bif\b/, forLine);
+      if (!ifInLoopLine) {
+        return makeError({
+          line: forLine + 1,
+          errorTitle: "Belum Ada Filter 'if' di Dalam Perulangan 'for'",
+          compilerMsg: `./main.go:${forLine + 1}: missing condition filter inside loop`,
+          cause: `Perulangan 'for' sudah dibuat di baris ke-${forLine}, tetapi belum ada pengecekan 'if' di dalamnya untuk membedakan status normal dan kritis/alarm.`,
+          hint: `Di dalam blok 'for' (baris ke-${forLine + 1}), tambahkan 'if' dan 'else' untuk mengecek nilai variabel loop di setiap putaran.`
+        });
       }
-      if (!hasFilter || !hasPrintKritis || !hasPrintNormal) {
-        return {
-          success: false,
-          output: "filter suhu di dalam loop belum membedakan kondisi",
-          error: "Logika penyaringan kondisi di dalam loop belum lengkap!",
-          diagnostics: "Gunakan percabangan if suhu > 90 untuk mencetak KRITIS, dan else untuk mencetak NORMAL."
-        };
-      }
-      logs.push("NORMAL: 85\nNORMAL: 90\nKRITIS: 95\nKRITIS: 100");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep kombinasi perulangan for dan filter kondisi if-else berhasil dikuasai!" }
+      };
     }
 
-    case 5: { // Energy Converter Modules (prosesEnergi function)
-      const hasFunc = /func\s+prosesEnergi\s*\(\s*\w+\s+int\s*,\s*\w+\s+int\s*\)\s*\(\s*int\s*,\s*string\s*\)/.test(cleanCode);
-      const hasFormula = /\(\s*\w+\s*\*\s*\w+\s*\)\s*\/\s*100/.test(cleanCode);
-      const hasCall = /prosesEnergi\s*\(\s*150\s*,\s*80\s*\)/.test(cleanCode);
+    case 5: {
+      // Konsep Level 5: Custom function dengan parameter & multiple return (atau return nilai) + pemanggilan
+      const customFuncLine = findLine(/func\s+(?!main\b)\w+\s*\(/);
+      if (!customFuncLine) {
+        return makeError({
+          line: pkgLine + 2,
+          errorTitle: "Fungsi Modular Baru Belum Didefinisikan",
+          compilerMsg: "./main.go: missing helper function declaration outside main()",
+          cause: "Misi ini meminta pembuatan fungsi khusus di luar 'func main()' untuk mengolah data dan mengembalikan hasil.",
+          hint: "Buat fungsi dengan format: func namaFungsi(param1 int, param2 int) (int, string) { ... }"
+        });
+      }
 
-      if (!hasFunc) {
-        return {
-          success: false,
-          output: "signature fungsi prosesEnergi tidak valid",
-          error: "Definisi fungsi prosesEnergi harus menerima (int, int) dan mengembalikan (int, string)!",
-          diagnostics: "Periksa parameter dan return signature pada fungsi prosesEnergi."
-        };
+      const returnLine = findLine(/\breturn\b/, customFuncLine);
+      if (!returnLine) {
+        return makeError({
+          line: customFuncLine + 2,
+          errorTitle: "Kata Kunci 'return' Belum Ada di Dalam Fungsi",
+          compilerMsg: `./main.go:${customFuncLine + 2}: missing return at end of function`,
+          cause: `Fungsi pada baris ke-${customFuncLine} sudah dideklarasikan memiliki nilai kembalian, namun belum mengembalikan nilai dengan 'return'.`,
+          hint: `Tambahkan pernyataan 'return hasilAngka, statusTeks' di dalam fungsi tersebut (sekitar baris ke-${customFuncLine + 2}).`
+        });
       }
-      if (!hasFormula) {
-        return {
-          success: false,
-          output: "perhitungan dayaBersih belum menggunakan rumus efisiensi",
-          error: "Hitung daya bersih dengan rumus: (watt * efisiensi) / 100!",
-          diagnostics: "Terapkan rumus perhitungan daya bersih sebelum menentukan status return."
-        };
+
+      const funcNameMatch = getLineContent(customFuncLine).match(/func\s+(\w+)/);
+      const funcName = funcNameMatch ? funcNameMatch[1] : null;
+      const calledInMain = funcName ? findLine(new RegExp(`\\b${funcName}\\s*\\(`), mainFuncLine) : true;
+
+      if (!calledInMain) {
+        return makeError({
+          line: mainFuncLine + 1,
+          errorTitle: `Fungsi '${funcName}()' Belum Dipanggil di func main()`,
+          compilerMsg: `./main.go:${mainFuncLine + 1}: function ${funcName} is defined but never called`,
+          cause: `Kamu sudah membuat fungsi '${funcName}' dengan baik di baris ke-${customFuncLine}, tetapi belum memanggilnya di dalam 'func main()'.`,
+          hint: `Panggil '${funcName}(...)' di baris ke-${mainFuncLine + 1}, tampung hasilnya di variabel, lalu cetak dengan fmt.Println.`
+        });
       }
-      if (!hasCall) {
-        return {
-          success: false,
-          output: "prosesEnergi defined but not called with (150, 80)",
-          error: "Panggil fungsi prosesEnergi(150, 80) di func main()!",
-          diagnostics: "Di main(): hasil, status := prosesEnergi(150, 80) lalu cetak nilainya."
-        };
-      }
-      logs.push("120 OPTIMAL");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep fungsi modular dan return value berhasil diterapkan!" }
+      };
     }
 
-    case 6: { // Server Rack Storage (Range & Filter Overload)
-      const hasRange = /for\s+.*range\s+bebanNodes/.test(cleanCode);
-      const hasCondition = />\s*75/.test(cleanCode);
-      const hasPrint = /fmt\.Println\s*\(\s*["']Node Overload:["']\s*,\s*overloadCount\s*\)/.test(cleanCode) || /fmt\.Println\s*\(.*2.*\)/.test(cleanCode);
+    case 6: {
+      // Konsep Level 6: Slice/Array + iterasi for range + perhitungan/akumulasi
+      const rangeLine = findLine(/\bfor\s+.*?\brange\b/, mainFuncLine);
+      if (!rangeLine) {
+        return makeError({
+          line: mainFuncLine + 2,
+          errorTitle: "Iterasi Slice dengan 'for ... range' Belum Ditemukan",
+          compilerMsg: `./main.go:${mainFuncLine + 2}: expected 'for _, val := range slice'`,
+          cause: "Untuk menelusuri seluruh elemen di dalam Slice secara idiomatik di Go, gunakan kata kunci 'range' pada loop 'for'.",
+          hint: `Gunakan pola: for _, nilai := range namaSlice { ... } di sekitar baris ke-${mainFuncLine + 2}.`
+        });
+      }
 
-      if (!hasRange) {
-        return {
-          success: false,
-          output: "loop range belum terdeteksi",
-          error: "Iterasi slice harus menggunakan kata kunci 'range'!",
-          diagnostics: "Gunakan 'for _, beban := range bebanNodes' untuk membaca setiap angka beban."
-        };
+      const hasConditionOrCounter = findLine(/\bif\b|\+\+|\+=/, rangeLine);
+      if (!hasConditionOrCounter) {
+        return makeError({
+          line: rangeLine + 1,
+          errorTitle: "Logika Pemrosesan Data di Dalam Loop 'range' Belum Ada",
+          compilerMsg: `./main.go:${rangeLine + 1}: loop body does not filter or accumulate values`,
+          cause: `Pada loop 'range' di baris ke-${rangeLine}, kamu belum mengecek kondisi elemen atau menambahkan counter (+= / ++).`,
+          hint: `Di baris ke-${rangeLine + 1}, tambahkan pengecekan 'if' dan naikkan variabel penghitung (misal: counter++).`
+        });
       }
-      if (!hasCondition) {
-        return {
-          success: false,
-          output: "syarat ambang overload (> 75) belum diuji",
-          error: "Filter beban overload belum tepat!",
-          diagnostics: "Periksa apakah nilai beban > 75 di dalam loop sebelum menaikkan hitungan overloadCount."
-        };
-      }
-      if (!hasPrint) {
-        return {
-          success: false,
-          output: "total overload belum dicetak",
-          error: "Cetak hasil hitungan dengan format yang diminta!",
-          diagnostics: "Gunakan fmt.Println(\"Node Overload:\", overloadCount)."
-        };
-      }
-      logs.push("Node Overload: 2");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep Slice dan iterasi 'for range' sudah benar!" }
+      };
     }
 
-    case 7: { // Hardware Direct Memory (Pointer kalibrasiChip)
-      const hasDereference = /\*chip\s*=\s*100/.test(cleanCode);
-      const hasCondition = /\*chip\s*>\s*batas/.test(cleanCode) || /\*chip\s*>\s*500/.test(cleanCode);
-      const hasAddressOf = /kalibrasiChip\s*\(\s*&statusChip\s*,\s*500\s*\)/.test(cleanCode);
+    case 7: {
+      // Konsep Level 7: Pointer (* untuk tipe/dereference dan & untuk alamat memori)
+      const ptrParamLine = findLine(/func\s+\w+\s*\([^)]*\*+\w+/);
+      if (!ptrParamLine) {
+        return makeError({
+          line: pkgLine + 3,
+          errorTitle: "Parameter Pointer (*int / *string) Belum Ditemukan pada Fungsi",
+          compilerMsg: "./main.go: function parameter must be a pointer type (*T)",
+          cause: "Agar fungsi dapat mengubah nilai asli di memori tanpa menyalinnya, parameter fungsi harus bertipe pointer (menggunakan tanda bintang *).",
+          hint: "Pastikan tanda '*' menempel pada tipe data parameter fungsi, contoh: func ubahData(ptr *int)"
+        });
+      }
 
-      if (!hasCondition || !hasDereference) {
-        return {
-          success: false,
-          output: "Chip Status: 999",
-          error: "Nilai memori chip belum dimodifikasi dengan operator pointer dereference (*)",
-          diagnostics: "Di dalam fungsi: if *chip > batas { *chip = 100 }."
-        };
+      const derefLine = findLine(/\*\s*\w+\s*(=|\+=|-=|\*=)/, ptrParamLine);
+      if (!derefLine) {
+        return makeError({
+          line: ptrParamLine + 1,
+          errorTitle: "Dereference Pointer (*variabel = ...) Belum Dilakukan",
+          compilerMsg: `./main.go:${ptrParamLine + 1}: pointer value is never mutated via dereference (*)`,
+          cause: `Di dalam fungsi pada baris ke-${ptrParamLine}, kamu belum mengubah nilai di alamat memori pointer tersebut menggunakan operator '*'.`,
+          hint: `Gunakan tanda bintang di depan nama variabel pointer pada baris ke-${ptrParamLine + 1}, contoh: *ptr = nilaiBaru`
+        });
       }
-      if (!hasAddressOf) {
-        return {
-          success: false,
-          output: "cannot use statusChip as pointer",
-          error: "Kirimkan alamat memori &statusChip saat memanggil kalibrasiChip!",
-          diagnostics: "Gunakan operator & di depan statusChip: kalibrasiChip(&statusChip, 500)."
-        };
+
+      const addrLine = findLine(/&\s*\w+/, mainFuncLine);
+      if (!addrLine) {
+        return makeError({
+          line: mainFuncLine + 2,
+          errorTitle: "Operator Alamat Memori (&) Belum Dipakai Saat Memanggil Fungsi",
+          compilerMsg: `./main.go:${mainFuncLine + 2}: cannot use variable (type int) as type *int in argument`,
+          cause: `Saat memanggil fungsi pointer di dalam 'func main()' (sekitar baris ke-${mainFuncLine + 2}), kamu harus mengirimkan alamat memorinya menggunakan tanda '&'.`,
+          hint: `Tambahkan simbol '&' di depan variabel argumen saat memanggil fungsi di baris ke-${mainFuncLine + 2}, contoh: namaFungsi(&variabel)`
+        });
       }
-      logs.push("Chip Status: 100");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep Pointer (& address-of dan * dereference) telah dikuasai!" }
+      };
     }
 
-    case 8: { // Drone Defense Unit (Pointer Receiver TerimaDamage)
-      const hasReceiver = /func\s*\(\s*\w+\s+\*Drone\s*\)\s*TerimaDamage\s*\(\s*\w+\s+int\s*\)/.test(cleanCode);
-      const hasDamageOp = /-\s*=\s*\w+|Perisai\s*-\s*\w+/.test(cleanCode);
-      const hasCall = /\w+\.TerimaDamage\s*\(\s*50\s*\)/.test(cleanCode);
+    case 8: {
+      // Konsep Level 8: Struct + Method Receiver
+      const structLine = findLine(/type\s+\w+\s+struct\b/);
+      if (!structLine) {
+        return makeError({
+          line: pkgLine + 2,
+          errorTitle: "Definisi 'struct' Tidak Ditemukan",
+          compilerMsg: "./main.go: missing struct type definition",
+          cause: "Misi ini membutuhkan pembuatan tipe data komposit 'struct' untuk merepresentasikan entitas objek.",
+          hint: "Definisikan struct dengan pola: type NamaStruct struct { Field1 string; Field2 int }"
+        });
+      }
 
-      if (!hasReceiver) {
-        return {
-          success: false,
-          output: "method TerimaDamage belum memiliki pointer receiver (*Drone)",
-          error: "Method harus menggunakan pointer receiver (*Drone) agar bisa memutasi data!",
-          diagnostics: "Format receiver: func (d *Drone) TerimaDamage(dmg int) { ... }"
-        };
+      const receiverLine = findLine(/func\s*\(\s*\w+\s+\*?\w+\s*\)\s*\w+/);
+      if (!receiverLine) {
+        return makeError({
+          line: structLine + 4,
+          errorTitle: "Method dengan Receiver Struct Belum Dibuat",
+          compilerMsg: `./main.go:${structLine + 4}: expected method receiver func (s *Struct) MethodName()`,
+          cause: `Struct sudah dibuat di baris ke-${structLine}, namun belum memiliki method receiver yang menempel pada struct tersebut.`,
+          hint: `Buat method dengan pointer receiver di sekitar baris ke-${structLine + 4}: func (obj *NamaStruct) NamaMethod(...) { ... }`
+        });
       }
-      if (!hasDamageOp) {
-        return {
-          success: false,
-          output: "perisai drone belum dikurangi",
-          error: "Kurangi nilai perisai drone dengan damage yang diterima!",
-          diagnostics: "Tuliskan: d.Perisai -= dmg di dalam method TerimaDamage."
-        };
-      }
-      if (!hasCall) {
-        return {
-          success: false,
-          output: "drone belum menerima serangan",
-          error: "Panggil method TerimaDamage(50) pada objek Drone!",
-          diagnostics: "Buat Drone{Model: \"GOPHER-1\", Perisai: 150} lalu panggil bot.TerimaDamage(50)."
-        };
-      }
-      logs.push("GOPHER-1 Sisa Perisai: 100");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep Struct dan Pointer Receiver Method sudah tepat!" }
+      };
     }
 
-    case 9: { // Universal Protocol Link (Interface Multi-Method)
-      const hasInterface = /type\s+ModulDaya\s+interface/.test(cleanCode);
-      const hasWattMethod = /func\s*\(\s*\w+\s+ReaktorNuklir\s*\)\s*HasilkanWatt\s*\(\s*\)\s*int/.test(cleanCode);
-      const hasNameMethod = /func\s*\(\s*\w+\s+ReaktorNuklir\s*\)\s*NamaModul\s*\(\s*\)\s*string/.test(cleanCode);
-      const hasInspectCall = /InspeksiModul\s*\(\s*\w+\s*\)/.test(cleanCode);
+    case 9: {
+      // Konsep Level 9: Interface + Implementasi Method pada Struct
+      const ifaceLine = findLine(/type\s+\w+\s+interface\b/);
+      if (!ifaceLine) {
+        return makeError({
+          line: pkgLine + 2,
+          errorTitle: "Definisi 'interface' Belum Ada",
+          compilerMsg: "./main.go: missing interface type declaration",
+          cause: "Misi ini menguji konsep polimorfisme Go menggunakan kontrak 'interface'.",
+          hint: "Deklarasikan interface dengan: type NamaInterface interface { NamaMethod() TipeReturn }"
+        });
+      }
 
-      if (!hasInterface || !hasWattMethod || !hasNameMethod) {
-        return {
-          success: false,
-          output: "ReaktorNuklir does not implement ModulDaya (missing methods)",
-          error: "ReaktorNuklir wajib mengimplementasikan KEDUA method: HasilkanWatt() dan NamaModul()!",
-          diagnostics: "Pastikan struct ReaktorNuklir memiliki method HasilkanWatt() int dan NamaModul() string."
-        };
+      const methodLine = findLine(/func\s*\(\s*\w+\s+\*?\w+\s*\)\s*\w+/);
+      if (!methodLine) {
+        return makeError({
+          line: ifaceLine + 5,
+          errorTitle: "Struct Belum Mengimplementasikan Method dari Interface",
+          compilerMsg: `./main.go:${ifaceLine + 5}: struct does not implement interface (missing method receiver)`,
+          cause: `Interface pada baris ke-${ifaceLine} membutuhkan struct yang mengimplementasikan method-method di dalamnya.`,
+          hint: `Buat method receiver untuk struct kamu di sekitar baris ke-${ifaceLine + 5} agar otomatis memenuhi kontrak interface.`
+        });
       }
-      if (!hasInspectCall) {
-        return {
-          success: false,
-          output: "modul daya belum dihubungkan ke fungsi inspeksi",
-          error: "Panggil fungsi InspeksiModul dengan objek ReaktorNuklir!",
-          diagnostics: "Buat objek ReaktorNuklir{} lalu oper ke InspeksiModul(core)."
-        };
-      }
-      logs.push("Nuklir Core-1 Output: 1000 Watt");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep Interface dan Polimorfisme implisit Go berhasil diterapkan!" }
+      };
     }
 
-    case 10: { // Swarm Worker Fleet (Concurrent Multi-Task)
-      const hasAuth = /go\s+prosesTask\s*\(\s*["']AUTH["']\s*\)/.test(cleanCode);
-      const hasTelemetri = /go\s+prosesTask\s*\(\s*["']TELEMETRI["']\s*\)/.test(cleanCode);
-
-      if (!hasAuth || !hasTelemetri) {
-        return {
-          success: false,
-          output: "tasks did not run concurrently with keyword 'go'",
-          error: "Kedua task belum dijalankan secara asinkron dengan keyword 'go'!",
-          diagnostics: "Tuliskan 'go prosesTask(\"AUTH\")' dan 'go prosesTask(\"TELEMETRI\")' sebelum time.Sleep."
-        };
+    case 10: {
+      // Konsep Level 10: Concurrency dengan Goroutine ('go namaFungsi(...)')
+      const goMatches = [...cleanCode.matchAll(/\bgo\s+\w+\s*\(/g)];
+      if (goMatches.length < 1) {
+        return makeError({
+          line: mainFuncLine + 1,
+          errorTitle: "Kata Kunci Goroutine 'go' Belum Digunakan",
+          compilerMsg: `./main.go:${mainFuncLine + 1}: tasks executed synchronously, expected 'go' keyword`,
+          cause: "Untuk menjalankan fungsi secara konkuren (asinkron di latar belakang), pemanggilan fungsi harus diawali kata kunci 'go'.",
+          hint: `Tambahkan kata kunci 'go' di depan pemanggilan fungsi pada baris ke-${mainFuncLine + 1}, contoh: go namaFungsi("...")`
+        });
       }
-      logs.push("Task: AUTH Selesai\nTask: TELEMETRI Selesai");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep Concurrency dengan Goroutine ('go') berhasil dijalankan!" }
+      };
     }
 
-    case 11: { // Pipes of Power (Channels & Kalkulasi)
-      const hasMakeChan = /make\s*\(\s*chan\s+int\s*\)/.test(cleanCode);
-      const hasSend = /ch\s*<-\s*(\w+|50\s*\*\s*2|100)/.test(cleanCode);
-      const hasReceive = /<-\s*ch/.test(cleanCode);
+    case 11: {
+      // Konsep Level 11: Channel ('make(chan ...)' dan operator '<-')
+      const makeChanLine = findLine(/make\s*\(\s*chan\b/);
+      if (!makeChanLine) {
+        return makeError({
+          line: mainFuncLine + 1,
+          errorTitle: "Inisialisasi Channel 'make(chan ...)' Belum Ada",
+          compilerMsg: `./main.go:${mainFuncLine + 1}: uninitialized channel (nil channel deadlock)`,
+          cause: "Sebelum mengirim atau menerima data antar goroutine, pipa channel wajib dibuat menggunakan fungsi make(chan TipeData).",
+          hint: `Buat channel terlebih dahulu di baris ke-${mainFuncLine + 1}, contoh: ch := make(chan int)`
+        });
+      }
 
-      if (!hasMakeChan) {
-        return {
-          success: false,
-          output: "channel int belum diinisialisasi",
-          error: "Buat channel integer dengan: ch := make(chan int)!",
-          diagnostics: "Channel harus bertipe 'int' untuk mengalirkan data angka tegangan."
-        };
+      const arrowLine = findLine(/<-/);
+      if (!arrowLine) {
+        return makeError({
+          line: makeChanLine + 2,
+          errorTitle: "Operator Aliran Data Channel '<-' Belum Digunakan",
+          compilerMsg: `./main.go:${makeChanLine + 2}: fatal error: all goroutines are asleep - deadlock!`,
+          cause: `Channel sudah dibuat di baris ke-${makeChanLine}, tetapi belum ada proses pengiriman (ch <- data) maupun penerimaan (<-ch).`,
+          hint: `Gunakan operator panah '<-' untuk mengirim nilai ke channel dan membacanya kembali di func main().`
+        });
       }
-      if (!hasSend || !hasReceive) {
-        return {
-          success: false,
-          output: "deadlock / pipa data kosong",
-          error: "Alur kirim-terima channel belum lengkap!",
-          diagnostics: "Kirim data di goroutine dengan 'ch <- hasil' dan baca di main dengan '<-ch'."
-        };
-      }
-      logs.push("Tegangan Diterima: 100");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep komunikasi Goroutine dengan Channel ('make(chan)' & '<-') sudah tepat!" }
+      };
     }
 
-    case 12: { // Vault Deadlock & Mutex (tarikDaya)
-      const hasLock = /mu\.Lock\s*\(\s*\)/.test(cleanCode);
-      const hasUnlock = /mu\.Unlock\s*\(\s*\)/.test(cleanCode);
-      const hasCall = /tarikDaya\s*\(\s*50\s*\)/.test(cleanCode);
+    case 12: {
+      // Konsep Level 12: Mutex ('Lock()' dan 'Unlock()')
+      const lockLine = findLine(/\.Lock\s*\(\s*\)/);
+      if (!lockLine) {
+        return makeError({
+          line: mainFuncLine - 3 > 0 ? mainFuncLine - 3 : mainFuncLine + 1,
+          errorTitle: "Penguncian Memori '.Lock()' Belum Dipasang",
+          compilerMsg: "WARNING: DATA RACE DETECTED on shared variable!",
+          cause: "Saat variabel diakses/diubah secara bersama-sama, kamu harus mengunci akses menggunakan Mutex '.Lock()' agar data tidak korup.",
+          hint: "Panggil mu.Lock() tepat sebelum baris kode yang memodifikasi variabel bersama."
+        });
+      }
 
-      if (!hasLock || !hasUnlock) {
-        return {
-          success: false,
-          output: "DATA RACE DETECTED! Saldo brankas korup!",
-          error: "Operasi saldo brankas belum dilindungi kunci Mutex!",
-          diagnostics: "Panggil mu.Lock() sebelum saldo -= jumlah dan mu.Unlock() setelahnya."
-        };
+      const unlockLine = findLine(/\.Unlock\s*\(\s*\)/);
+      if (!unlockLine) {
+        return makeError({
+          line: lockLine + 2,
+          errorTitle: "Pelepasan Kunci '.Unlock()' Belum Dipanggil",
+          compilerMsg: `./main.go:${lockLine + 2}: fatal error: sync: unlock of locked mutex missing (deadlock)`,
+          cause: `Kamu sudah memanggil Lock() di baris ke-${lockLine}, tetapi lupa memanggil Unlock() setelah selesai mengubah data sehingga program akan macet (deadlock)!`,
+          hint: `Tambahkan mu.Unlock() (atau defer mu.Unlock()) setelah operasi perubahan data di sekitar baris ke-${lockLine + 2}.`
+        });
       }
-      if (!hasCall) {
-        return {
-          success: false,
-          output: "tarikDaya belum dipanggil dengan 50",
-          error: "Panggil fungsi tarikDaya(50) di func main()!",
-          diagnostics: "Tarik daya sebesar 50 agar saldo berkurang dari 250 menjadi 200."
-        };
-      }
-      logs.push("Saldo Brankas Aman: 200");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep sinkronisasi memori dengan sync.Mutex (Lock & Unlock) sudah aman!" }
+      };
     }
 
-    case 13: { // Core Meltdown Recovery (Error & Defer)
-      const hasDefer = /defer\s+fmt\.Println\s*\(\s*["']Katup Darurat Berhasil Ditutup["']\s*\)/.test(cleanCode);
-      const hasErrCheck = /if\s+err\s*!=\s*nil/.test(cleanCode);
+    case 13: {
+      // Konsep Level 13: Defer & Error Handling ('defer' dan 'err != nil')
+      const deferLine = findLine(/\bdefer\b/);
+      if (!deferLine) {
+        return makeError({
+          line: mainFuncLine + 1,
+          errorTitle: "Pernyataan 'defer' Belum Digunakan",
+          compilerMsg: `./main.go:${mainFuncLine + 1}: cleanup procedure was not deferred`,
+          cause: "Misi ini mengharuskan penggunaan 'defer' agar instruksi penutupan/pembersihan dijamin tetap dieksekusi di akhir fungsi.",
+          hint: `Tambahkan kata kunci 'defer' di depan pemanggilan fungsi penutupan/cetak pada baris ke-${mainFuncLine + 1}.`
+        });
+      }
 
-      if (!hasDefer) {
-        return {
-          success: false,
-          output: "Katup darurat gagal tertutup saat prosedur selesai!",
-          error: "Instruksi penutupan katup belum di-defer!",
-          diagnostics: "Pasang defer di awal fungsi main: defer fmt.Println(\"Katup Darurat Berhasil Ditutup\")."
-        };
+      const errCheckLine = findLine(/\berr\s*!=\s*nil\b/);
+      if (!errCheckLine) {
+        return makeError({
+          line: deferLine + 2,
+          errorTitle: "Penanganan Error 'if err != nil' Belum Ditemukan",
+          compilerMsg: `./main.go:${deferLine + 2}: unhandled error return value`,
+          cause: "Dalam standar industri Go, setiap fungsi yang berpotensi menghasilkan error wajib diperiksa dengan pola 'if err != nil'.",
+          hint: `Tambahkan pengecekan 'if err != nil { ... }' setelah memanggil fungsi pemeriksaan di sekitar baris ke-${deferLine + 2}.`
+        });
       }
-      if (!hasErrCheck) {
-        return {
-          success: false,
-          output: "Error sensor diabaikan...",
-          error: "Pola penanganan error if err != nil belum dipasang!",
-          diagnostics: "Periksa apakah hasil periksaSuhu(120) mengembalikan error, lalu cetak pesannya."
-        };
-      }
-      logs.push("BAHAYA: Reaktor Overheat\nKatup Darurat Berhasil Ditutup");
-      break;
+
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Konsep Error Handling ('if err != nil') dan 'defer' telah diterapkan dengan benar!" }
+      };
     }
 
-    case 14: { // Cloud Gateway & REST API
-      const hasJsonMarshal = /json\.Marshal\s*\(\s*data\s*\)/.test(cleanCode);
-      const hasStringCast = /string\s*\(\s*jsonData\s*\)/.test(cleanCode);
+    case 14: {
+      // Konsep Level 14: JSON Serialization ('json.Marshal' / 'json.Unmarshal')
+      const marshalLine = findLine(/json\.(Marshal|Unmarshal|NewEncoder)/);
+      if (!marshalLine) {
+        return makeError({
+          line: mainFuncLine + 2,
+          errorTitle: "Fungsi Serialisasi 'json.Marshal' Belum Dipanggil",
+          compilerMsg: `./main.go:${mainFuncLine + 2}: struct was not serialized to JSON format`,
+          cause: "Untuk mengubah struct Go menjadi payload teks JSON yang siap dikirim lewat API, gunakan fungsi json.Marshal(...) dari package encoding/json.",
+          hint: `Panggil json.Marshal(dataStruct) di sekitar baris ke-${mainFuncLine + 2}, lalu ubah byte hasilnya menjadi string dengan string(jsonBytes).`
+        });
+      }
 
-      if (!hasJsonMarshal) {
-        return {
-          success: false,
-          output: "Payload belum diubah ke format JSON",
-          error: "Gunakan json.Marshal(data) untuk serialisasi struct!",
-          diagnostics: "Panggil fungsi json.Marshal(data) dari pustaka 'encoding/json'."
-        };
-      }
-      if (!hasStringCast) {
-        return {
-          success: false,
-          output: "buffer bytes mentah",
-          error: "Hasil json.Marshal bertipe []byte, belum diubah ke string!",
-          diagnostics: "Ubah byte buffer menjadi string dengan string(jsonData) sebelum dicetak."
-        };
-      }
-      logs.push(`{"status":"ONLINE","server":"Gopher-HQ"}`);
-      break;
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Selamat! Konsep JSON Serialization untuk Cloud & REST API telah dikuasai!" }
+      };
     }
 
     default:
-      logs.push(level.expectedOutput || "Program executed successfully");
+      return {
+        success: true,
+        output: expectedOutput,
+        diagnostics: { message: "Semua pengujian konsep berhasil lolos!" }
+      };
   }
-
-  return {
-    success: true,
-    output: logs.join("\n"),
-    diagnostics: "Semua pengujian lolos! Logika kode kamu berhasil memecahkan tantangan misi."
-  };
 }
