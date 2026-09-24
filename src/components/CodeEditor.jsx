@@ -87,30 +87,26 @@ export default function CodeEditor({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0f0f23] border-4 border-indigo-900 overflow-hidden text-slate-100" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* Header bar */}
-      <div className="bg-[#1a1a2e] px-2.5 sm:px-4 py-2 sm:py-3 border-b-4 border-indigo-900 flex items-center justify-between gap-1.5 sm:gap-3 flex-nowrap">
-        <div className="flex items-center space-x-3 shrink-0">
-          {/* Traffic Lights - Pixel style (squares) */}
-          <div className="hidden xs:flex space-x-1.5">
-            <span className="w-3 h-3 bg-red-500 border-2 border-red-800"></span>
-            <span className="w-3 h-3 bg-yellow-500 border-2 border-yellow-800"></span>
-            <span className="w-3 h-3 bg-green-500 border-2 border-green-800"></span>
+    <div className="flex flex-col h-full bg-white border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden text-slate-900">
+      {/* Header bar - Bright Pixel Style */}
+      <div className="bg-[#bae6fd] px-2.5 sm:px-4 py-2 border-b-[3px] border-slate-900 flex items-center justify-between gap-1.5 sm:gap-3 flex-nowrap">
+        <div className="flex items-center space-x-2 shrink-0">
+          {/* Pixel squares */}
+          <div className="hidden xs:flex space-x-1">
+            <span className="w-3 h-3 bg-rose-500 border-2 border-slate-900"></span>
+            <span className="w-3 h-3 bg-amber-400 border-2 border-slate-900"></span>
+            <span className="w-3 h-3 bg-emerald-400 border-2 border-slate-900"></span>
           </div>
 
           {/* Active File Tab */}
-          <div className="flex items-center space-x-2 bg-[#0f0f23] px-3 py-1.5 border-2 border-indigo-700 text-cyan-300">
-            <span className="text-[11px]">🐹</span>
-            <span className="font-bold text-xs uppercase tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.6rem' }}>main.go</span>
+          <div className="flex items-center space-x-1.5 bg-white px-2.5 py-1 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+            <span className="text-xs">🐹</span>
+            <span className="font-pixel text-[9px] sm:text-[10px] text-slate-900">main.go</span>
           </div>
-          <span className="text-[10px] font-medium text-slate-400 hidden xl:inline uppercase tracking-widest" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.5rem' }}>
-            [CTRL+ENTER RUN]
-          </span>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-2 shrink-0">
-          {/* Hint Button */}
+        <div className="flex items-center space-x-1.5 shrink-0">
           {hint && (
             <button
               onClick={() => {
@@ -118,128 +114,108 @@ export default function CodeEditor({
                 setShowHint(!showHint);
               }}
               title="Petunjuk Misi"
-              className={`p-1.5 sm:px-3 sm:py-1.5 border-2 flex items-center space-x-1 transition-all ${
-                showHint
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500 shadow-[2px_2px_0px_0px_#f59e0b]'
-                  : 'bg-[#0f0f23] text-slate-300 border-indigo-700 hover:text-amber-400 hover:border-amber-400 hover:shadow-[2px_2px_0px_0px_#fbbf24]'
+              className={`px-2 py-1.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-y-[1px] active:shadow-none text-xs font-bold flex items-center space-x-1 transition ${
+                showHint ? 'bg-[#fde047] text-slate-900' : 'bg-white hover:bg-amber-100 text-slate-900'
               }`}
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              <span className="hidden md:inline text-xs font-bold uppercase" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.5rem' }}>Hint</span>
+              <span className="hidden md:inline font-pixel text-[8px]">HINT</span>
             </button>
           )}
 
-          {/* Copy Button */}
           <button
             onClick={handleCopy}
             title="Salin Kode"
-            className="p-1.5 sm:p-2 bg-[#0f0f23] hover:bg-indigo-900 text-slate-300 hover:text-cyan-300 border-2 border-indigo-700 hover:border-cyan-400 transition-all hover:shadow-[2px_2px_0px_0px_#22d3ee]"
+            className="p-1.5 bg-white hover:bg-sky-100 text-slate-900 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-y-[1px] active:shadow-none transition"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
 
-          {/* Reset Button */}
           <button
             onClick={() => {
               soundEffects.playClick();
               onReset();
             }}
-            title="Kembalikan ke Kode Awal"
-            className="p-1.5 sm:px-3 sm:py-1.5 bg-[#0f0f23] hover:bg-red-950/40 text-slate-300 hover:text-red-400 border-2 border-indigo-700 hover:border-red-500 flex items-center space-x-1 transition-all hover:shadow-[2px_2px_0px_0px_#ef4444]"
+            title="Reset Kode"
+            className="p-1.5 sm:px-2 sm:py-1.5 bg-white hover:bg-rose-100 text-slate-900 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-y-[1px] active:shadow-none text-xs font-bold flex items-center space-x-1 transition"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden md:inline font-bold uppercase" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.5rem' }}>Reset</span>
+            <span className="hidden md:inline font-pixel text-[8px]">RESET</span>
           </button>
 
-          {/* Run Code Button */}
           <button
             onClick={() => {
               soundEffects.playClick();
               onRun();
             }}
             disabled={isExecuting}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 border-2 flex items-center space-x-2 transition-all active:translate-y-[2px] active:shadow-none ${
+            className={`px-3 sm:px-4 py-1.5 border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] active:translate-y-[2px] active:shadow-none flex items-center space-x-1.5 transition shrink-0 ${
               isExecuting
-                ? 'bg-slate-700 border-slate-900 text-slate-400 cursor-not-allowed shadow-[4px_4px_0px_0px_#0f172a]'
-                : 'bg-green-500 border-green-200 text-[#0f0f23] hover:bg-green-400 shadow-[4px_4px_0px_0px_#052e16]'
+                ? 'bg-slate-300 text-slate-700 cursor-not-allowed'
+                : 'bg-[#4ade80] hover:bg-emerald-400 text-slate-950'
             }`}
           >
-            {isExecuting ? (
-              <>
-                <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-none animate-spin"></div>
-                <span className="uppercase" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.55rem' }}>PROSES</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-[#0f0f23]" />
-                <span className="uppercase" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.55rem' }}>
-                  <span className="inline sm:hidden">RUN</span>
-                  <span className="hidden sm:inline">JALANKAN</span>
-                </span>
-              </>
-            )}
+            <Play className="w-3.5 h-3.5 fill-slate-950" />
+            <span className="font-pixel text-[9px] sm:text-[10px]">
+              {isExecuting ? 'PROSES...' : 'JALANKAN'}
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Hint Alert Drawer */}
+      {/* Hint Drawer */}
       {showHint && hint && (
-        <div className="bg-[#2d1b00] border-b-4 border-amber-600 px-4 py-3 flex items-start space-x-3 text-xs text-amber-200">
-          <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <strong className="text-amber-300 block mb-1 uppercase tracking-wide" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.55rem' }}>Bocoran Petunjuk:</strong>
-            <p className="leading-relaxed font-sans">{hint}</p>
+        <div className="bg-[#fef9c3] border-b-[3px] border-slate-900 px-4 py-2.5 flex items-start space-x-2.5 text-xs text-slate-900">
+          <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <strong className="font-pixel text-[9px] text-amber-800 block mb-1">💡 PETUNJUK MISI:</strong>
+            <p className="font-semibold text-sm">{hint}</p>
           </div>
         </div>
       )}
 
-      {/* Error Quick Alert Banner */}
+      {/* Error Banner */}
       {hasError && onViewTerminal && (
-        <div className="bg-red-950/80 border-b-4 border-red-600 px-3.5 py-2 flex items-center justify-between text-xs text-red-200">
-          <div className="flex items-center space-x-3 truncate">
-            <div className="w-2.5 h-2.5 bg-red-500 border border-red-200 animate-ping flex-shrink-0"></div>
-            <span className="font-bold uppercase tracking-wider truncate" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.5rem' }}>Error Sintaks / Logika</span>
+        <div className="bg-rose-100 border-b-[3px] border-slate-900 px-3.5 py-2 flex items-center justify-between text-xs text-rose-950">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="w-2.5 h-2.5 bg-rose-600 border border-slate-900 animate-ping shrink-0"></span>
+            <span className="font-bold truncate">Ada error pada kodemu! Cek detail barisnya.</span>
           </div>
           <button
             onClick={() => {
               soundEffects.playClick();
               onViewTerminal();
             }}
-            className="flex items-center space-x-1 px-3 py-1 bg-red-600 hover:bg-red-500 border-2 border-red-300 text-white font-bold uppercase transition flex-shrink-0 ml-2 shadow-[2px_2px_0px_0px_#450a0a] active:translate-y-[2px] active:shadow-none"
-            style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.45rem' }}
+            className="px-2.5 py-1 bg-rose-500 text-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-pixel text-[8px] shrink-0 ml-2"
           >
-            <span>Cek Terminal</span>
-            <span>&rarr;</span>
+            LIHAT ERROR &rarr;
           </button>
         </div>
       )}
 
       {/* Quick Snippets Bar */}
-      <div className="bg-[#16213e] px-3 py-2 border-b-4 border-indigo-900 flex items-center space-x-2 overflow-x-auto no-scrollbar">
-        <span className="text-cyan-400 flex-shrink-0 mr-1 hidden sm:inline uppercase" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.45rem' }}>
-          Snippets:
+      <div className="bg-[#f8fafc] px-3 py-1.5 border-b-[2px] border-slate-900 flex items-center space-x-1.5 overflow-x-auto no-scrollbar">
+        <span className="text-[9px] font-pixel text-slate-600 shrink-0 mr-1 hidden sm:inline">
+          SNIPPET:
         </span>
         {QUICK_SNIPPETS.map((snip, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => handleInsertSnippet(snip.insert)}
-            className="px-2 py-1 bg-[#0f0f23] hover:bg-indigo-900 active:bg-indigo-800 text-cyan-300 hover:text-cyan-100 border-2 border-indigo-700 hover:border-cyan-400 whitespace-nowrap font-mono transition-all transform active:translate-y-[1px] flex-shrink-0 shadow-[2px_2px_0px_0px_#1e1b4b]"
-            title={`Sisipkan ${snip.label}`}
-            style={{ fontFamily: "'Fira Code', monospace", fontSize: '0.75rem' }}
+            className="px-2 py-0.5 bg-white hover:bg-[#fde047] text-slate-900 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] active:translate-y-[1px] active:shadow-none whitespace-nowrap text-sm font-mono font-bold transition shrink-0"
           >
             {snip.label}
           </button>
         ))}
       </div>
 
-      {/* Code Editor Body */}
-      <div className="relative flex-1 flex overflow-hidden bg-[#0a0a1a]">
+      {/* Code Editor Body - Bright Paper Retro Theme */}
+      <div className="relative flex-1 flex overflow-hidden bg-[#fffef9]">
         {/* Line Numbers Gutter */}
         <div
           aria-hidden="true"
-          className="w-12 bg-[#050510] py-4 select-none text-right pr-3 text-indigo-400 border-r-2 border-indigo-900 leading-6"
-          style={{ fontFamily: "'Fira Code', monospace", fontSize: '0.85rem' }}
+          className="w-12 bg-[#f1f5f9] py-4 select-none text-right pr-3 font-mono text-base text-slate-500 border-r-[2px] border-slate-900 leading-[1.6rem]"
         >
           {Array.from({ length: lineCount }).map((_, i) => (
             <div key={i}>{i + 1}</div>
@@ -252,22 +228,21 @@ export default function CodeEditor({
           value={code}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="// Ketik kode Golang di sini..."
+          placeholder="// Tulis kode Golang kamu di sini..."
           spellCheck="false"
-          className="flex-1 w-full bg-transparent text-slate-100 p-4 outline-none resize-none leading-6 selection:bg-cyan-500/40 selection:text-cyan-100"
-          style={{ fontFamily: "'Fira Code', monospace", fontSize: '0.85rem' }}
+          className="flex-1 w-full bg-transparent text-slate-900 font-mono text-lg p-4 outline-none resize-none leading-[1.6rem] selection:bg-sky-300/50"
         />
       </div>
 
-      {/* Editor Status Footer */}
-      <div className="bg-[#1a1a2e] px-4 py-2 border-t-4 border-indigo-900 flex items-center justify-between text-indigo-300 uppercase tracking-widest" style={{ fontFamily: "'Press Start 2P', cursive", fontSize: '0.5rem' }}>
-        <div className="flex items-center space-x-4">
+      {/* Footer Status Bar */}
+      <div className="bg-[#f1f5f9] px-4 py-1.5 border-t-[3px] border-slate-900 flex items-center justify-between text-xs text-slate-800">
+        <div className="flex items-center space-x-4 font-pixel text-[8px]">
           <span>UTF-8</span>
-          <span>GO v1.22+</span>
+          <span>GOLANG 1.22</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 bg-green-500 border border-green-200 shadow-[0_0_5px_#22c55e]"></span>
-          <span>READY</span>
+        <div className="flex items-center space-x-1.5">
+          <span className="w-2.5 h-2.5 bg-emerald-500 border border-slate-900"></span>
+          <span className="font-pixel text-[8px] text-slate-800">READY</span>
         </div>
       </div>
     </div>

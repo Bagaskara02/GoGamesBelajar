@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Poppins:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Press+Start+2P&family=VT323&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,44 +6,51 @@
 
 @layer base {
   *, ::before, ::after {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Pixelify Sans', 'Press Start 2P', monospace !important;
+    letter-spacing: 0.015em;
   }
 
   body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Pixelify Sans', 'Press Start 2P', monospace !important;
     overflow-x: hidden;
-    background-color: #0f0f23;
-    color: #e2e8f0;
+    background-color: #f4f1ea;
+    background-image:
+      linear-gradient(to right, rgba(30, 41, 59, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(30, 41, 59, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: #0f172a;
   }
 
-  /* Hanya elemen kode program dan teks command yang menggunakan font monospace */
-  code, pre, .font-mono, .code-editor-font {
-    font-family: 'Fira Code', Consolas, Monaco, monospace !important;
+  /* Elemen kode program dan terminal menggunakan font pixel monospace VT323 */
+  code, pre, textarea, .font-mono, .code-editor-font {
+    font-family: 'VT323', 'Pixelify Sans', monospace !important;
+    font-size: 1.18rem;
+    line-height: 1.45;
   }
 
-  /* Pixel font untuk heading dan label UI game */
-  .font-pixel {
-    font-family: 'Press Start 2P', cursive !important;
+  /* Heading dan label badge pixel 8-bit */
+  .font-pixel, h1, h2, h3 {
+    font-family: 'Press Start 2P', 'Pixelify Sans', cursive !important;
   }
 }
 
-/* Pixel-style scrollbars */
+/* Pixel-style scrollbars (Light Retro Theme) */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f0f23;
+  background: #e2e8f0;
+  border-left: 2px solid #0f172a;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3a5c;
-  border: 2px solid #0f0f23;
+  background: #38bdf8;
+  border: 2px solid #0f172a;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a9eff;
+  background: #0284c7;
 }
 
-/* No-scrollbar utility for horizontal scroll areas */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -52,48 +59,19 @@
   scrollbar-width: none;
 }
 
-/* Pixel border utility */
 @layer utilities {
-  .pixel-border {
-    border: 3px solid #2a3a5c;
-    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+  .pixel-card {
+    background-color: #ffffff;
+    border: 3px solid #0f172a;
+    box-shadow: 4px 4px 0px #0f172a;
   }
-  .pixel-border-sm {
-    border: 2px solid #2a3a5c;
-    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+  .pixel-btn {
+    border: 2px solid #0f172a;
+    box-shadow: 3px 3px 0px #0f172a;
+    transition: all 0.1s ease;
   }
-  .pixel-border-cyan {
-    border: 2px solid #00d4ff;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
-  }
-  .pixel-border-green {
-    border: 2px solid #39ff14;
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
-  }
-  .pixel-border-gold {
-    border: 2px solid #ffd700;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
-  }
-  .pixel-border-red {
-    border: 2px solid #ff4444;
-    box-shadow: 0 0 10px rgba(255, 68, 68, 0.2);
-  }
-  .pixel-inset {
-    box-shadow: inset 2px 2px 0px rgba(255,255,255,0.05), inset -2px -2px 0px rgba(0,0,0,0.3);
-  }
-
-  /* Scanline overlay effect */
-  .scanlines::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.03) 2px,
-      rgba(0, 0, 0, 0.03) 4px
-    );
-    pointer-events: none;
+  .pixel-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #0f172a;
   }
 }

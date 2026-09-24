@@ -12,79 +12,76 @@ const VictoryModal = ({ isOpen, level, onNextLevel, onStay, isLastLevel }) => {
   if (!isOpen || !level) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md font-[Poppins]">
-      {/* Modal Container */}
-      <div 
-        className="w-full max-w-lg relative bg-[#1a1a2e] flex flex-col items-center p-8 animate-in zoom-in duration-500"
-        style={{ 
-          border: '4px solid #f59e0b', 
-          boxShadow: '0 0 30px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(245, 158, 11, 0.1), 8px 8px 0px rgba(0,0,0,0.8)' 
-        }}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div className="w-full max-w-md relative bg-[#fffef9] border-[4px] border-slate-900 shadow-[8px_8px_0px_#0f172a] flex flex-col items-center p-6 sm:p-8 text-slate-900 animate-fadeIn">
         {/* Close Button */}
-        <button 
-          onClick={() => { playSound('click'); onStay(); }}
-          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-white border-2 border-transparent hover:border-gray-500 transition-colors"
+        <button
+          onClick={() => {
+            playSound('click');
+            onStay();
+          }}
+          className="absolute top-3 right-3 p-1.5 bg-white hover:bg-rose-200 text-slate-900 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-colors"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Trophy Icon */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-yellow-500/20 blur-xl rounded-full animate-pulse"></div>
-          <div className="text-7xl relative z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)] animate-bounce" style={{ animationDuration: '2s' }}>
-            🏆
-          </div>
+        <div className="w-20 h-20 bg-[#fde047] border-[3px] border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center justify-center text-5xl mb-4 animate-bounce">
+          🏆
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-yellow-400 font-['Press_Start_2P'] text-xs mb-4 tracking-widest uppercase">
-            Level {level.id} Selesai!
+        <div className="text-center mb-6">
+          <div className="inline-block bg-[#4ade80] border-2 border-slate-900 px-3 py-1 font-pixel text-[9px] text-slate-950 mb-3 shadow-[2px_2px_0px_#0f172a]">
+            LEVEL {level.id} SELESAI!
           </div>
-          <h2 className="text-3xl font-bold text-white font-['Press_Start_2P'] mb-2 text-shadow-lg" style={{ textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-pixel mb-2">
             LUAR BIASA!
           </h2>
-          <p className="text-gray-300 mt-4">
-            Kamu telah berhasil menyelesaikan misi ini dengan sempurna.
+          <p className="text-slate-700 text-sm font-medium">
+            Kamu berhasil menyelesaikan misi pemrograman ini dengan konsep yang tepat!
           </p>
         </div>
 
         {/* Stats / Rewards Cards */}
-        <div className="grid grid-cols-2 gap-4 w-full mb-8">
-          <div className="bg-[#0f0f23] p-4 border-2 border-[#4a4e69] flex flex-col items-center justify-center relative overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
-            <Star className="text-yellow-400 mb-2 absolute opacity-10 top-2 right-2" size={40} />
-            <div className="text-gray-400 font-['Press_Start_2P'] text-[8px] mb-1 z-10">EXP DIDAPAT</div>
-            <div className="text-2xl font-bold text-green-400 font-['Press_Start_2P'] z-10">+{level.exp || 100}</div>
+        <div className="grid grid-cols-2 gap-3.5 w-full mb-6">
+          <div className="bg-[#fef9c3] p-3.5 border-[3px] border-slate-900 flex flex-col items-center justify-center shadow-[3px_3px_0px_#0f172a]">
+            <Star className="text-amber-600 mb-1" size={20} />
+            <div className="text-slate-700 font-pixel text-[8px] mb-1">EXP DIDAPAT</div>
+            <div className="text-sm font-bold text-slate-900 font-pixel">+150 XP</div>
           </div>
-          
-          <div className="bg-[#0f0f23] p-4 border-2 border-[#4a4e69] flex flex-col items-center justify-center relative overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
-            <Trophy className="text-blue-400 mb-2 absolute opacity-10 top-2 left-2" size={40} />
-            <div className="text-gray-400 font-['Press_Start_2P'] text-[8px] mb-1 z-10">STATUS</div>
-            <div className="text-lg font-bold text-blue-400 font-['Press_Start_2P'] z-10">SELESAI</div>
+
+          <div className="bg-[#e0f2fe] p-3.5 border-[3px] border-slate-900 flex flex-col items-center justify-center shadow-[3px_3px_0px_#0f172a]">
+            <Trophy className="text-sky-700 mb-1" size={20} />
+            <div className="text-slate-700 font-pixel text-[8px] mb-1">STATUS</div>
+            <div className="text-sm font-bold text-emerald-700 font-pixel">100% CLEAR</div>
           </div>
         </div>
 
         {/* Actions */}
         <div className="w-full flex flex-col gap-3">
           {!isLastLevel && (
-            <button 
-              onClick={() => { playSound('start'); onNextLevel(); }}
-              className="w-full group relative py-4 bg-green-600 hover:bg-green-500 transition-colors font-['Press_Start_2P'] text-white text-[10px] md:text-xs overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.5)] border-2 border-green-400 flex items-center justify-center gap-2"
-              style={{ textShadow: '1px 1px 0px rgba(0,0,0,0.8)' }}
+            <button
+              onClick={() => {
+                playSound('start');
+                onNextLevel();
+              }}
+              className="w-full py-3.5 bg-[#4ade80] hover:bg-emerald-400 font-pixel text-slate-950 text-[10px] sm:text-xs shadow-[4px_4px_0px_#0f172a] border-[3px] border-slate-900 active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2 transition"
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-              <span className="relative z-10">LEVEL BERIKUTNYA</span>
-              <ChevronRight size={18} className="relative z-10 text-green-200" />
+              <span>LEVEL BERIKUTNYA</span>
+              <ChevronRight size={18} />
             </button>
           )}
-          
-          <button 
-            onClick={() => { playSound('click'); onStay(); }}
-            className="w-full py-3 bg-[#2a2a4a] hover:bg-[#3a3a5a] transition-colors font-['Press_Start_2P'] text-cyan-400 text-[10px] shadow-[4px_4px_0px_rgba(0,0,0,0.5)] border-2 border-[#4a4e69] flex items-center justify-center gap-2"
+
+          <button
+            onClick={() => {
+              playSound('click');
+              onStay();
+            }}
+            className="w-full py-3 bg-white hover:bg-sky-100 font-pixel text-slate-900 text-[9px] sm:text-[10px] shadow-[3px_3px_0px_#0f172a] border-[3px] border-slate-900 active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2 transition"
           >
             <RefreshCw size={14} />
-            <span>LIHAT SIMULASI</span>
+            <span>LIHAT SIMULASI 2D</span>
           </button>
         </div>
       </div>
